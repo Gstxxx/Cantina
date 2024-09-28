@@ -1,14 +1,20 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors';
 import { handle } from 'hono/vercel'
+import { clientApp } from "../clients/client.js";
+import { clientsApp } from "../clients/index.js";
 
-export const runtime = 'edge'
+export const config = {
+    runtime: 'edge',
+};
 
-const app = new Hono().basePath('/api')
+const mainApp = new Hono();
 
-app.get('/hello', (c) => {
-    return c.json({
-        message: 'Hello from Hono!'
-    })
-})
+mainApp.use('/*', cors());
 
-export const GET = handle(app)
+mainApp.route('/', clientsApp);
+mainApp.route('/', clientApp);
+
+export default handle(mainApp);
+
+

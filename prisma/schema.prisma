@@ -12,7 +12,7 @@ model Client {
   name       String
   phone      String
   created_at DateTime         @default(now())
-  updated_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
   deleted_at DateTime?
   purchases  PurchaseRecord[]
 }
@@ -22,7 +22,7 @@ model Product {
   name       String            @unique
   price      Int
   created_at DateTime          @default(now())
-  updated_at DateTime          @default(now())
+  updated_at DateTime          @updatedAt
   deleted_at DateTime?
   variants   Variant[]
   products   ProductPurchase[]
@@ -33,7 +33,7 @@ model Variant {
   name       String
   price      Int
   created_at DateTime  @default(now())
-  updated_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
   deleted_at DateTime?
   product    Product   @relation(fields: [productId], references: [id])
   productId  Int
@@ -43,7 +43,7 @@ model PurchaseRecord {
   id           Int               @id @default(autoincrement())
   purchaseDate DateTime          @default(now())
   created_at   DateTime          @default(now())
-  updated_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
   deleted_at   DateTime?
   client       Client            @relation(fields: [clientId], references: [id])
   clientId     Int
@@ -53,7 +53,7 @@ model PurchaseRecord {
 model ProductPurchase {
   id               Int            @id @default(autoincrement())
   created_at       DateTime       @default(now())
-  updated_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
   deleted_at       DateTime?
   product          Product        @relation(fields: [productId], references: [id])
   productId        Int
