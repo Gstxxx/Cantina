@@ -24,19 +24,7 @@ model Product {
   created_at DateTime          @default(now())
   updated_at DateTime          @updatedAt
   deleted_at DateTime?
-  variants   Variant[]
   products   ProductPurchase[]
-}
-
-model Variant {
-  id         Int       @id @default(autoincrement())
-  name       String
-  price      Int
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
-  product    Product   @relation(fields: [productId], references: [id])
-  productId  Int
 }
 
 model PurchaseRecord {
