@@ -9,8 +9,8 @@ datasource db {
 
 model Client {
   id         Int              @id @default(autoincrement())
-  name       String
-  phone      String
+  name       String           @unique
+  phone      String           @unique
   created_at DateTime         @default(now())
   updated_at DateTime         @updatedAt
   deleted_at DateTime?

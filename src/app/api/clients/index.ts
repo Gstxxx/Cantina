@@ -1,4 +1,4 @@
-import { prisma } from '../../../lib/prisma.js';
+import { prisma } from '../../../lib/prisma';
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
