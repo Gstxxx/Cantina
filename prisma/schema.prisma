@@ -40,9 +40,6 @@ model PurchaseRecord {
 
 model ProductPurchase {
   id               Int            @id @default(autoincrement())
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
-  deleted_at       DateTime?
   product          Product        @relation(fields: [productId], references: [id])
   productId        Int
   record           PurchaseRecord @relation(fields: [purchaseRecordId], references: [id])
