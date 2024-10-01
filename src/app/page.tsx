@@ -16,8 +16,8 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen bg-gray-100">
-      <aside className="w-64 bg-white shadow-md">
+    <div className="flex h-screen bg-[#111111] text-white">
+      <aside className="w-64 bg-[#111111] shadow-md">
         <nav className="mt-5 px-2">
           <ul className="space-y-2">
             {navItems.map((item) => (
@@ -25,9 +25,9 @@ export default function DashboardLayout({
                 <Link href={item.href} passHref>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start text-gray-400 hover:bg-[#bb86fc]"
                   >
-                    <item.icon className="mr-2 h-4 w-4" />
+                    <item.icon className="mr-2 h-4 w-4 text-gray-500" />
                     {item.name}
                   </Button>
                 </Link>
@@ -37,7 +37,7 @@ export default function DashboardLayout({
         </nav>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 overflow-y-auto p-8 bg-[#111111]">
         {children}
         <PurchaseAnalysis />
       </main>

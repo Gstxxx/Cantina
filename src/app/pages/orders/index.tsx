@@ -88,51 +88,52 @@ const PurchaseAnalysis = () => {
 
     const productSalesData = Object.entries(productSales).map(([name, quantity]) => ({ name, quantity }))
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+    const COLORS = ['#bb86fc', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
     return (
-        <div className="p-4 space-y-4">
-            <h1 className="text-2xl font-bold mb-4">Análise de Compras (2024-09-30 a 2024-10-30)</h1>
+        <div className="p-4 space-y-4 text-white ">
+
+            <h1 className="text-2xl font-bold mb-4 text-[#bb86fc]">Análise de Compras (2024-09-30 a 2024-10-30)</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Total de Compras</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Total de Compras</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold">{totalPurchases}</p>
+                        <p className="text-3xl font-bold text-[#bb86fc]">{totalPurchases}</p>
                     </CardContent>
                 </Card>
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Total de Quantidade Vendida</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Total de Quantidade Vendida</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold">{totalQuantity}</p>
+                        <p className="text-3xl font-bold text-[#bb86fc]">{totalQuantity}</p>
                     </CardContent>
                 </Card>
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Total de Receita</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Total de Receita</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold text-green-600">R${(totalRevenue / 100).toFixed(2)}</p>
+                        <p className="text-3xl font-bold text-[#bb86fc]">R${(totalRevenue / 100).toFixed(2)}</p>
                     </CardContent>
                 </Card>
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Valor Médio do Pedido</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Valor Médio do Pedido</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-3xl font-bold  text-green-600">R${(averageOrderValue / 100).toFixed(2)}</p>
+                        <p className="text-3xl font-bold text-[#bb86fc]">R${(averageOrderValue / 100).toFixed(2)}</p>
                     </CardContent>
                 </Card>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Distribuição de Vendas de Produtos</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Distribuição de Vendas de Produtos</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <BarChart width={500} height={300} data={productSalesData}>
@@ -141,13 +142,13 @@ const PurchaseAnalysis = () => {
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="quantity" fill="#8884d8" />
+                            <Bar dataKey="quantity" fill="#bb86fc" />
                         </BarChart>
                     </CardContent>
                 </Card>
-                <Card className='p-4 rounded-md'>
+                <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
-                        <CardTitle>Gráfico de Pizza de Vendas de Produtos</CardTitle>
+                        <CardTitle className="text-[#bb86fc]">Gráfico de Pizza de Vendas de Produtos</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <PieChart width={500} height={300}>
@@ -157,7 +158,7 @@ const PurchaseAnalysis = () => {
                                 cy={150}
                                 labelLine={false}
                                 outerRadius={80}
-                                fill="#8884d8"
+                                fill="#FFFFFF"
                                 dataKey="quantity"
                                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                             >
@@ -171,33 +172,33 @@ const PurchaseAnalysis = () => {
                 </Card>
             </div>
 
-            <Card className='p-4 rounded-md'>
+            <Card className='p-4 rounded-md bg-[#332e3d]'>
                 <CardHeader>
-                    <CardTitle>Detalhes da Compra</CardTitle>
+                    <CardTitle className="text-[#bb86fc]">Detalhes da Compra</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 bg-[#332e3d]">
+                        <thead className="bg-[#332e3d]">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produtos</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-[#bb86fc] uppercase tracking-wider">ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-[#bb86fc] uppercase tracking-wider">Data</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-[#bb86fc] uppercase tracking-wider">Cliente</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-[#bb86fc] uppercase tracking-wider">Produtos</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-[#bb86fc] uppercase tracking-wider">Total</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-[#332e3d] divide-y divide-gray-200">
                             {purchases.map((purchase) => (
                                 <tr key={purchase.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{purchase.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{new Date(purchase.purchaseDate).toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{purchase.client.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4 whitespace-nowrap text-[#bb86fc]">{purchase.id}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-[#bb86fc]">{new Date(purchase.purchaseDate).toLocaleString()}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-[#bb86fc]">{purchase.client.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-[#bb86fc]">
                                         {purchase.products.map((product) => (
-                                            <div key={product.id}>{product.product.name} (x{product.quantity})</div>
+                                            <div key={product.id} className="text-[#bb86fc]">{product.product.name} (x{product.quantity})</div>
                                         ))}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4 whitespace-nowrap text-[#bb86fc]">
                                         R${(purchase.products.reduce((sum, product) => sum + (product.quantity * product.product.price), 0) / 100).toFixed(2)}
                                     </td>
                                 </tr>
