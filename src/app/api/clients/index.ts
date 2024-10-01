@@ -109,7 +109,7 @@ const clientApp = new Hono()
                 where: { id: body.id, deleted_at: null },
             });
             if (!find_client) {
-                return c.json({ error: "Client doesn't exist or already deleted" }, 400);
+                return c.json({ error: "Client doesn't exist or already deleted" }, 404);
             }
             const deletedClient = await prisma.client.update({
                 where: { id: Number(body.id) },
