@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, Users, Package, ShoppingCart } from "lucide-react"
-import PurchaseAnalysis from "./pages/orders/index"
+import PurchaseAnalysis from "./orders/page"
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Clients', href: '/dashboard/clients', icon: Users },
   { name: 'Products', href: '/dashboard/products', icon: Package },
-  { name: 'Purchases', href: '/orders/PurchaseAnalysis', icon: ShoppingCart },
+  { name: 'Purchases', href: '/orders/', icon: ShoppingCart },
 ]
 
 export default function DashboardLayout({
@@ -22,7 +22,7 @@ export default function DashboardLayout({
           <ul className="space-y-2">
             {navItems.map((item) => (
               <li key={item.name}>
-                <Link href={item.href} passHref>
+                <Link href={item.href}>
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-gray-400 hover:bg-[#bb86fc]"
@@ -39,7 +39,6 @@ export default function DashboardLayout({
 
       <main className="flex-1 overflow-y-auto p-8 bg-[#111111]">
         {children}
-        <PurchaseAnalysis />
       </main>
     </div>
   )

@@ -1,5 +1,11 @@
 // types.ts (You can create this file to keep your types organized)
-
+export interface Auth {
+    id: number;
+    email: string;
+    password: string;
+    type: string;
+    refreshToken: string;
+}
 export interface Product {
     id: number;
     created_at: string;

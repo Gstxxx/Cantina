@@ -7,6 +7,22 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model Auth {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  name         String
+  password     String
+  type         String         @default("Customer")
+  RefreshToken RefreshToken[]
+}
+
+model RefreshToken {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  Auth   Auth?  @relation(fields: [authId], references: [id])
+  authId Int?
+}
+
 model Client {
   id         Int              @id @default(autoincrement())
   name       String           @unique

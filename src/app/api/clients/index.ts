@@ -2,7 +2,7 @@ import { prisma } from '../../../lib/prisma';
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-
+import { adminMiddleware, userMiddleware } from '../middlewere/authmiddlewere';
 const zFetch = z.object({
     id: z.number(),
 });
@@ -18,6 +18,8 @@ const zCreateUserSchema = z.object({
 });
 
 const clientApp = new Hono()
+    .use(userMiddleware)
+    .use(adminMiddleware)
     .basePath("/client")
     .get("/fetch", async (c) => {
         try {

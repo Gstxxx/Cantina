@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../../../lib/prisma';
+import { adminMiddleware, userMiddleware } from '../middlewere/authmiddlewere';
 
 const zCreatePurchase = z.object({
     clientId: z.number(),
@@ -24,6 +25,8 @@ const zFetchReport = z.object({
 
 const purchaseApp = new Hono()
     .basePath('/purchases')
+    .use(userMiddleware)
+    .use(adminMiddleware)
     .post('/create', zValidator('json', zCreatePurchase), async (c) => {
         const body = c.req.valid('json');
 

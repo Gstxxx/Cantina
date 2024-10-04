@@ -2,6 +2,7 @@ import { prisma } from '../../../lib/prisma';
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { adminMiddleware, userMiddleware } from '../middlewere/authmiddlewere';
 
 const zCreateProductSchema = z.object({
     name: z.string(),
@@ -24,6 +25,8 @@ const zGetInfoSchema = z.object({
 
 const productApp = new Hono()
     .basePath("/product")
+    .use(userMiddleware)
+    .use(adminMiddleware)
     .get("/fetch", async (c) => {
         try {
             const clients = await prisma.product.findMany({
