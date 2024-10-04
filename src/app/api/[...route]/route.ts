@@ -13,13 +13,10 @@ const mainApp = new Hono();
 
 mainApp.use('/*', cors());
 
-mainApp.route('/api', authApp);
-mainApp.route('/api', clientApp);
-mainApp.route('/api', productApp);
-mainApp.route('/api', purchaseApp);
+const routes = mainApp.route('/api', authApp).route('/api', clientApp).route('/api', productApp).route('/api', purchaseApp);
 
-export const GET = handle(mainApp);
+export const GET = handle(routes);
 
-export const POST = handle(mainApp);
+export const POST = handle(routes);
 
-
+export type AppType = typeof routes;

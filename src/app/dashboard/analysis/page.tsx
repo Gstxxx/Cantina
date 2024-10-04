@@ -1,47 +1,25 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-type Product = {
-    id: number
-    name: string
-    price: number
-}
-
-type PurchaseProduct = {
-    id: number
-    productId: number
-    purchaseRecordId: number
-    quantity: number
-    product: Product
-}
-
-type Purchase = {
-    id: number
-    purchaseDate: string
-    clientId: number
-    client: {
-        id: number
-        name: string
-        phone: string
-    }
-    products: PurchaseProduct[]
-}
+import { submit as submitRefresh } from "../refresh"
+import { useRouter } from 'next/navigation'
+import { PurchaseRecord } from 'app/types'
 
 const PurchaseAnalysis = () => {
-    const [purchases, setPurchases] = useState<Purchase[]>([])
+    const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/purchases/report', {
+                const response = await fetch('/api/purchases/report', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     body: JSON.stringify({
                         start: "2024-09-30",
@@ -49,7 +27,24 @@ const PurchaseAnalysis = () => {
                     }),
                 })
                 if (!response.ok) {
-                    throw new Error('Failed to fetch data')
+                    const tokenRefresh = localStorage.getItem("tokenRefresh");
+                    if (tokenRefresh) {
+                        const result = await submitRefresh({ tokenRefresh });
+                        if (result.ok) {
+                            const token = result.json();
+                            localStorage.setItem("token", (await token).refreshToken);
+                        }
+                        else {
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('refreshToken');
+                            router.push("/auth/login");
+                        }
+                    }
+                    else {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        router.push("/auth/login");
+                    }
                 }
                 const data = await response.json()
                 setPurchases(data)
@@ -62,7 +57,7 @@ const PurchaseAnalysis = () => {
         }
 
         fetchData()
-    }, [])
+    }, [router])
 
     if (loading) return <div>Loading...</div>
     if (error) return <div>Error: {error}</div>

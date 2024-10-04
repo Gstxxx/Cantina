@@ -17,19 +17,46 @@ const zCreateUserSchema = z.object({
     phone: z.string(),
 });
 
+const zPaginateSchema = z.object({
+    page: z.string(),
+});
+
 const clientApp = new Hono()
     .use(userMiddleware)
     .use(adminMiddleware)
     .basePath("/client")
-    .get("/fetch", async (c) => {
+    .get("/fetch", zValidator("query", zPaginateSchema), async (c) => {
         try {
-            const clients = await prisma.client.findMany({
-                where: { deleted_at: null },
-            });
-            if (clients.length === 0) {
-                return c.json({ message: 'No clients found' }, 404);
+
+            const page = c.req.query("page");
+            if (!page) {
+                return c.json({ error: "Page is required" }, 400);
             }
-            return c.json(clients, 200);
+            const keysPerPage = 60;
+            const skip = keysPerPage * (Number(page) - 1);
+
+            const [users, totalCount] = await Promise.all([
+                prisma.client.findMany({
+                    where: {
+                        deleted_at: null,
+                    },
+                    skip: skip,
+                    take: keysPerPage,
+                }),
+                prisma.client.count({
+                    where: {
+                        deleted_at: null,
+                    },
+                }),
+            ]);
+
+            if (!users || users.length === 0) {
+                return c.json({ error: "No Users found" }, 404);
+            }
+
+            const totalPages = Math.ceil(totalCount / keysPerPage);
+
+            return c.json({ clients: users, totalPages, totalCount, });
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch clients' }, 500);

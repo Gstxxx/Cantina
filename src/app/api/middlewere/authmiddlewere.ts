@@ -3,6 +3,7 @@ import { verify } from "hono/jwt";
 import { createMiddleware } from "hono/factory";
 import { Auth } from "../../types";
 import { prisma } from "../../../lib/prisma";
+
 function getAuthToken(c: Context) {
     const authHeader = c.req.header("Authorization");
     if (!authHeader) {
@@ -16,10 +17,9 @@ function getAuthToken(c: Context) {
 
     return { token };
 }
-
 export const userMiddleware = createMiddleware<{
     Variables: {
-        user: User;
+        user: Auth;
     };
 }>(async (c, next) => {
     const token = getAuthToken(c);
@@ -40,13 +40,22 @@ export const userMiddleware = createMiddleware<{
         if (!user) {
             return c.json({ error: "User not found" }, 404);
         }
-        c.set("user", user);
+        const userAuth: Auth = {
+            id: user.id,
+            email: user.email,
+            password: user.password,
+            type: user.type,
+            refreshToken: token.token,
+        };
+        c.set("user", userAuth);
         await next();
     } catch (err) {
-        console.log("Error: %s", err)
-        const token = getAuthToken(c);
-        console.log("Token: %s", token.token)
-        return c.json({ error: "Invalid or expired token" }, 401);
+        if (err.name === 'JwtTokenExpired') {
+
+            return c.json({ message: 'Token has expired, please log in again.' }, 401);
+        } else {
+            return c.json({ message: 'Unauthorized access.' }, 401);
+        }
     }
 });
 
