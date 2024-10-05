@@ -1,6 +1,6 @@
 'use client'
 import { ReactNode, useEffect } from 'react';
-import { LayoutDashboard, Users, Package, ShoppingCart, BarChart } from "lucide-react"
+import { LayoutDashboard, Users, Package, ShoppingCart } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
@@ -22,8 +22,8 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
     }, [router])
 
     return (
-        <div className="flex h-screen bg-[#111111] text-white relative">
-            <aside className={`w-64 bg-[#111111] shadow-md`}>
+        <div className="flex h-screen bg-[#f3eee1] text-white relative">
+            <aside className={`w-[180px]`}>
                 <nav className="mt-5 px-2">
                     <ul className="space-y-2">
                         {navItems.map((item) => (
@@ -31,10 +31,12 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                                 <Link href={item.href}>
                                     <Button
                                         variant="ghost"
-                                        className="w-full justify-start text-gray-400 hover:bg-[#bb86fc]"
+                                        className="justify-start text-[#fdfcfa] hover:bg-[#D96037] w-full"
                                     >
-                                        <item.icon className="mr-2 h-4 w-4 text-gray-500" />
-                                        {item.name}
+                                        <div className="flex flex-row gap-4 m-2 mx-4 text-[#D96037] hover:text-[#fdfcfa]">
+                                            <item.icon className="my-2" />
+                                            <p className='mt-2 text-lg'>{item.name}</p>
+                                        </div>
                                     </Button>
                                 </Link>
                             </li>
@@ -43,7 +45,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                 </nav>
             </aside>
 
-            <main className="flex-1 overflow-y-auto p-8 bg-[#111111]">
+            <main className="flex-1 overflow-y-auto p-8 bg-[#f3eee1]">
                 {children}
             </main>
         </div>

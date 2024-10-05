@@ -1,11 +1,10 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { refreshToken, submit as submitRefresh } from "../refresh"
 import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
-
+import { Card } from '@/components/card/card'
 const PurchaseAnalysis = () => {
     const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
@@ -55,7 +54,7 @@ const PurchaseAnalysis = () => {
     const totalRevenue = purchases.reduce((sum, purchase) =>
         sum + purchase.products.reduce((pSum, product) => pSum + (product.quantity * product.product.price), 0), 0)
     const averageOrderValue = totalRevenue / totalPurchases
-
+    const odervalstring = 'R$' + (averageOrderValue / 100).toFixed(2);
     const productSales = purchases.reduce((acc, purchase) => {
         purchase.products.forEach(product => {
             if (acc[product.product.name]) {
@@ -74,44 +73,16 @@ const PurchaseAnalysis = () => {
     return (
         <div className="p-4 space-y-4 text-white ">
 
-            <h1 className="text-2xl font-bold mb-4 text-[#bb86fc]">Análise de Compras (2024-09-30 a 2024-10-30)</h1>
+            <h1 className="text-3xl font-bold mb-4 text-[#d96037]">Análise de Compras (2024-09-30 a 2024-10-30)</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className='p-4 rounded-md bg-[#332e3d]'>
-                    <CardHeader>
-                        <CardTitle className="text-[#bb86fc]">Total de Compras</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold text-[#bb86fc]">{totalPurchases}</p>
-                    </CardContent>
-                </Card>
-                <Card className='p-4 rounded-md bg-[#332e3d]'>
-                    <CardHeader>
-                        <CardTitle className="text-[#bb86fc]">Total de Quantidade Vendida</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold text-[#bb86fc]">{totalQuantity}</p>
-                    </CardContent>
-                </Card>
-                <Card className='p-4 rounded-md bg-[#332e3d]'>
-                    <CardHeader>
-                        <CardTitle className="text-[#bb86fc]">Total de Receita</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold text-[#bb86fc]">R${(totalRevenue / 100).toFixed(2)}</p>
-                    </CardContent>
-                </Card>
-                <Card className='p-4 rounded-md bg-[#332e3d]'>
-                    <CardHeader>
-                        <CardTitle className="text-[#bb86fc]">Valor Médio do Pedido</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-3xl font-bold text-[#bb86fc]">R${(averageOrderValue / 100).toFixed(2)}</p>
-                    </CardContent>
-                </Card>
+                <Card title="Total de Compras" value={totalPurchases} />
+                <Card title="Total de Quantidade Vendida" value={totalQuantity} />
+                <Card title="Total de Receita" value={totalRevenue} />
+                <Card title="Valor Médio do Pedido" value={odervalstring} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/*  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card className='p-4 rounded-md bg-[#332e3d]'>
                     <CardHeader>
                         <CardTitle className="text-[#bb86fc]">Distribuição de Vendas de Produtos</CardTitle>
@@ -152,8 +123,7 @@ const PurchaseAnalysis = () => {
                     </CardContent>
                 </Card>
             </div>
-
-            <Card className='p-4 rounded-md bg-[#332e3d]'>
+<Card className='p-4 rounded-md bg-[#332e3d]'>
                 <CardHeader>
                     <CardTitle className="text-[#bb86fc]">Detalhes da Compra</CardTitle>
                 </CardHeader>
@@ -187,7 +157,7 @@ const PurchaseAnalysis = () => {
                         </tbody>
                     </table>
                 </CardContent>
-            </Card>
+            </Card> */}
         </div>
     )
 }
