@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { submit as submitRefresh } from "../refresh"
+import { refreshToken, submit as submitRefresh } from "../refresh"
 import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
 
@@ -27,23 +27,9 @@ const PurchaseAnalysis = () => {
                     }),
                 })
                 if (!response.ok) {
-                    const tokenRefresh = localStorage.getItem("tokenRefresh");
-                    if (tokenRefresh) {
-                        const result = await submitRefresh({ tokenRefresh });
-                        if (result.ok) {
-                            const token = result.json();
-                            localStorage.setItem("token", (await token).refreshToken);
-                        }
-                        else {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('refreshToken');
-                            router.push("/auth/login");
-                        }
-                    }
-                    else {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('refreshToken');
-                        router.push("/auth/login");
+                    const isLogged = await refreshToken();
+                    if (!isLogged) {
+                        router.push('/auth/login')
                     }
                 }
                 const data = await response.json()

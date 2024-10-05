@@ -41,14 +41,6 @@ const LoginPage = () => {
     const [state, setState] = useState<{ error: string | null; isLoading: boolean }>({ error: null, isLoading: false });
     const router = useRouter();
 
-    useEffect(() => {
-        const localToken = localStorage.getItem('token');
-
-        if (localToken) {
-            router.push("/dashboard");
-        }
-    }, [router]);
-
     const {
         register,
         handleSubmit,
