@@ -7,11 +7,21 @@ import { Card } from '@/components/card/card'
 import { getCookie } from 'cookies-next'
 import { ListClients } from '@/components/card/list_clients'
 
+import * as React from "react"
+
+import { Calendar } from "@/components/ui/calendar"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon } from "@radix-ui/react-icons"
+import { format } from "date-fns"
+
 const PurchaseAnalysis = () => {
     const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter();
+    const [startDate, setStartDate] = React.useState<Date | undefined>(new Date())
+    const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
 
     useEffect(() => {
         const fetchData = async () => {
@@ -24,15 +34,19 @@ const PurchaseAnalysis = () => {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        start: "2024-09-30",
-                        end: "2024-10-30"
+                        start: startDate?.toISOString().split('T')[0],
+                        end: endDate?.toISOString().split('T')[0]
                     }),
                 })
                 if (!response.ok) {
                     router.push('/auth/login')
                 }
                 const data = await response.json()
-                setPurchases(data)
+                if (data === null) {
+                    setError('No purchases found for the selected period.')
+                } else {
+                    setPurchases(data)
+                }
             } catch (err) {
                 console.log(err)
                 setError('Failed to fetch purchase data')
@@ -42,7 +56,7 @@ const PurchaseAnalysis = () => {
         }
 
         fetchData()
-    }, [router])
+    }, [router, startDate, endDate])
 
     if (loading) return <div className='text-orange-500'>Loading...</div>
     if (error) return <div>Error: {error}</div>
@@ -71,21 +85,64 @@ const PurchaseAnalysis = () => {
     return (
         <div className="p-4 space-y-4 text-white ">
 
-            <h1 className="text-3xl font-bold mb-4 text-white">Análise de Compras (2024-09-30 a 2024-10-30)</h1>
+            <h1 className="text-3xl font-bold mb-4 text-white">Análise de Compras de <span className='text-orange-500 font-bold text-xl'>{startDate?.toISOString().split('T')[0]}</span> a <span className='text-orange-500 font-bold text-xl'>{endDate?.toISOString().split('T')[0]}</span></h1>
+            <div className="flex space-x-4">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"outline"} className="rounded-md bg-[#272b2f] text-white p-2 border-transparent border-0">
+                            <p className='text-orange-500 font-bold text-medium'>Data Inicio</p>
+                            {startDate ? format(startDate, "PPP") : "Data Inicio"}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2 justify-center bg-[#1f2225] border-transparent border-0" align="start">
+                        <p className='text-orange-500 font-bold text-medium'>Data Inicio</p>
+                        <Calendar
+                            mode="single"
+                            selected={startDate}
+                            onSelect={setStartDate}
+                            className="rounded-md border-transparent border-0 bg-[#272b2f] mt-4 p-4 text-white"
+                        />
+                    </PopoverContent>
+                </Popover>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card title="Total de Compras" value={totalPurchases} />
-                <Card title="Total de Quantidade Vendida" value={totalQuantity} />
-                <Card title="Total de Receita" value={totalRevenue} />
-                <Card title="Valor Médio do Pedido" value={odervalstring} />
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"outline"} className="rounded-md bg-[#272b2f] text-white p-2 border-transparent border-0">
+                            <p className='text-orange-500 font-bold text-medium'>Data Fim</p>
+                            {endDate ? format(endDate, "PPP") : "Data Fim"}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2 justify-center bg-[#1f2225] border-transparent border-0" align="start">
+                        <p className='text-orange-500 font-bold text-medium'>Data Fim</p>
+                        <Calendar
+                            mode="single"
+                            selected={endDate}
+                            onSelect={setEndDate}
+                            className="rounded-md border-transparent border-0 bg-[#272b2f] mt-4 p-4 text-white"
+                        />
+                    </PopoverContent>
+                </Popover>
             </div>
+            {totalPurchases > 0 && (
+                <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card title="Total de Compras" value={totalPurchases} />
+                        <Card title="Total de Quantidade Vendida" value={totalQuantity} />
+                        <Card title="Total de Receita" value={totalRevenue} />
+                        <Card title="Valor Médio do Pedido" value={odervalstring} />
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Graphic title="Distribuição de Vendas de Produtos" values={productSalesData} />
-                <PizzaGrafic title="Gráfico de Pizza de Vendas de Produtos" values={productSalesData} />
-            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                        <Graphic title="Distribuição de Vendas de Produtos" values={productSalesData} />
+                        <PizzaGrafic title="Gráfico de Pizza de Vendas de Produtos" values={productSalesData} />
+                    </div>
 
-            <ListClients title="Lista de Vendas" purchases={purchases as PurchaseRecord[]} />
+                    <ListClients title="Lista de Vendas" purchases={purchases as PurchaseRecord[]} />
+                </div>
+            )}
+            <h1 className="text-bold text-3xl text-orange-500">Sem registros nesse periodo</h1>
         </div>
     )
 }

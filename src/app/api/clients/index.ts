@@ -35,13 +35,16 @@ const clientApp = new Hono()
             const keysPerPage = 60;
             const skip = keysPerPage * (Number(page) - 1);
 
-            const [users, totalCount] = await Promise.all([
+            const [clients, totalCount] = await Promise.all([
                 prisma.client.findMany({
                     where: {
                         deleted_at: null,
                     },
                     skip: skip,
                     take: keysPerPage,
+                    include: {
+                        purchases: true,
+                    },
                 }),
                 prisma.client.count({
                     where: {
@@ -50,13 +53,13 @@ const clientApp = new Hono()
                 }),
             ]);
 
-            if (!users || users.length === 0) {
-                return c.json({ error: "No Users found" }, 404);
+            if (!clients || clients.length === 0) {
+                return c.json({ error: "No Clients found" }, 404);
             }
 
             const totalPages = Math.ceil(totalCount / keysPerPage);
 
-            return c.json({ clients: users, totalPages, totalCount, }, 200);
+            return c.json({ clients: clients, totalPages, totalCount, }, 200);
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch clients' }, 500);

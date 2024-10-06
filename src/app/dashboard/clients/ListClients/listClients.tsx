@@ -61,7 +61,11 @@ export default function ListUsers() {
             if (response.ok) {
                 const data = await response.json();
                 if (Array.isArray(data.clients) && data.clients !== null) {
-                    setUsers(data.clients);
+                    const clientsWithPurchases = data.clients.map(client => ({
+                        ...client,
+                        purchases: client.purchases || []
+                    }));
+                    setUsers(clientsWithPurchases as Client[]);
                     setTotalPages(data.totalPages);
                     setTotalCount(data.totalCount);
                 } else {
