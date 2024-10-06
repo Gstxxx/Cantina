@@ -1,8 +1,9 @@
 import { hc } from 'hono/client'
 import type { AppType } from 'app/api/[...route]/route'
+import { getCookie } from 'cookies-next'
 
 export function getToken() {
-    const token = localStorage.getItem('token')?.toString();
+    const token = getCookie('token')?.toString();
     if (!token) {
         return { error: "Not logged in" };
     }

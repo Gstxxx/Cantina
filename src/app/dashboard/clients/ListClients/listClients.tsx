@@ -127,13 +127,13 @@ export default function ListUsers() {
     };
 
     return (
-        <div className='flex-1 p-6 grid grid-cols-2 gap-6 md:grid-cols-2'>
-            <Card className="bg-muted/50 dark:bg-muted-dark/50">
+        <div className='rounded-lg bg-[#272b2f] border-transparent border-0 max-h-[80vh] overflow-auto'>
+            <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl">Administrar Clientes</CardTitle>
+                    <CardTitle className="text-2xl text-orange-500">Administrar Clientes</CardTitle>
                     <CardDescription>Ver e atualizar clientes</CardDescription>
                 </CardHeader>
-                <CardContent className="max-h-[680px] overflow-auto">
+                <CardContent className="overflow-auto">
                     {error && <div className="text-red-500">{error}</div>}
 
                     <div className="flex space-x-2 mb-4">
@@ -141,40 +141,42 @@ export default function ListUsers() {
                             placeholder="Procurar clientes..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-sm"
+                            className="max-w-sm bg-[#222527] border-transparent border-0 p-4 active:border-orange-500"
                         />
                     </div>
 
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Username</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Created At</TableHead>
-                                <TableHead>Actions</TableHead>
+                                <TableHead className='text-orange-500'>Nome</TableHead>
+                                <TableHead className='text-orange-500'>Celular</TableHead>
+                                <TableHead className='text-orange-500'>Criado em</TableHead>
+                                <TableHead></TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
                             {filteredUsers.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell>{user.name}</TableCell>
                                     <TableCell>{user.phone}</TableCell>
                                     <TableCell>{formatDate(user.created_at)}</TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
+                                    <TableCell >
+                                        <DropdownMenu >
+
+                                            <DropdownMenuTrigger asChild >
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
                                                     <span className="sr-only">Abrir Menu</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                            <DropdownMenuContent
+                                                className="bg-[#222527] border-transparent border-0 p-4" align="end">
+                                                <DropdownMenuItem className="text-white" onClick={() => handleEditUser(user)}>
                                                     Editar
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     onClick={() => {
-                                                        if (window.confirm('Are you sure you want to delete this user?')) {
+                                                        if (window.confirm('Você deseja deletar o cliente?')) {
                                                             handleDeleteUser(user.id);
                                                         }
                                                     }}
@@ -191,9 +193,9 @@ export default function ListUsers() {
                     </Table>
 
                     {editingUser && (
-                        <div className="fixed inset-0 bg-muted/50 dark:bg-muted-dark/50 flex items-center justify-center z-50">
-                            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                                <h2 className="text-xl font-bold mb-4">Editando Cliente</h2>
+                        <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
+                            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
+                                <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Cliente</h2>
                                 <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
@@ -205,16 +207,16 @@ export default function ListUsers() {
                                 >
                                     <input type="hidden" name="id" value={editingUser.id} />
                                     <div>
-                                        <label htmlFor="name" className="block text-sm font-medium">Nome</label>
-                                        <input type="text" name="name" defaultValue={editingUser.name} className="w-full p-2 border border-gray-300 rounded-md" />
+                                        <label htmlFor="name" className="block text-sm font-medium mb-2">Nome</label>
+                                        <input type="text" name="name" defaultValue={editingUser.name} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
                                     </div>
                                     <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium">Celular</label>
-                                        <input type="text" name="phone" defaultValue={editingUser.phone} className="w-full p-2 border border-gray-300 rounded-md" />
+                                        <label htmlFor="phone" className="block text-sm font-medium mb-2">Celular</label>
+                                        <input type="text" name="phone" defaultValue={editingUser.phone} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
                                     </div>
                                     <div className="flex justify-end space-x-2">
-                                        <Button type="button" variant="outline" onClick={() => setEditingUser(null)}>Cancelar</Button>
-                                        <Button type="submit">Atualizar</Button>
+                                        <Button type="button" className='bg-red-500 p-2 hover:bg-red-600' onClick={() => setEditingUser(null)}>Cancelar</Button>
+                                        <Button type="submit" className='bg-green-500 p-2 hover:bg-green-600'>Atualizar</Button>
                                     </div>
                                 </form>
                             </div>
@@ -226,7 +228,7 @@ export default function ListUsers() {
                     <Button
                         onClick={() => paginate(currentPage - 1)}
                         disabled={currentPage === 1}
-                        variant="outline"
+                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
                     >
                         Anterior
                     </Button>
@@ -234,7 +236,7 @@ export default function ListUsers() {
                     <Button
                         onClick={() => paginate(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        variant="outline"
+                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
                     >
                         Próxima
                     </Button>

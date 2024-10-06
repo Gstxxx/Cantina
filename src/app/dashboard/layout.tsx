@@ -4,6 +4,8 @@ import { LayoutDashboard, Users, Package, ShoppingCart } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
+import { getCookie, setCookie } from 'cookies-next'
+import { Toaster } from '@/components/ui/toaster';
 
 const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -11,18 +13,54 @@ const navItems = [
     { name: 'Produtos', href: '/dashboard/products', icon: Package },
     { name: 'Vendas', href: '/dashboard/purchases', icon: ShoppingCart },
 ]
+
 const AuthLayout = ({ children }: { children: ReactNode }) => {
-    const router = useRouter()
+    const router = useRouter();
+
+    const refreshToken = async () => {
+        const refreshToken = getCookie('refreshToken')?.toString();
+        if (!refreshToken) {
+            return false;
+        }
+
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token) {
+                    setCookie('token', data.token);
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to refresh token:', error);
+        }
+        return false;
+    };
 
     useEffect(() => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-            router.push('/auth/login')
-        }
-    }, [router])
+        const checkAuth = async () => {
+            const token = getCookie('token')?.toString();
+            if (!token) {
+                const isLogged = await refreshToken();
+                if (!isLogged) {
+                    router.push('/auth/login');
+                }
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     return (
-        <div className="flex h-screen bg-[#f3eee1] text-white relative">
+        <div className="flex h-screen bg-[#272b2f] text-white relative">
             <aside className={`w-[180px]`}>
                 <nav className="mt-5 px-2">
                     <ul className="space-y-2">
@@ -31,9 +69,9 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                                 <Link href={item.href}>
                                     <Button
                                         variant="ghost"
-                                        className="justify-start text-[#fdfcfa] hover:bg-[#D96037] w-full"
+                                        className="justify-start text-[#9a9f9e] hover:bg-[#212529] w-full"
                                     >
-                                        <div className="flex flex-row gap-4 m-2 mx-4 text-[#D96037] hover:text-[#fdfcfa]">
+                                        <div className="flex flex-row gap-4 m-2 mx-4 text-[#66707b] hover:text-[#fdfcfa]">
                                             <item.icon className="my-2" />
                                             <p className='mt-2 text-lg'>{item.name}</p>
                                         </div>
@@ -45,9 +83,10 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                 </nav>
             </aside>
 
-            <main className="flex-1 overflow-y-auto p-8 bg-[#f3eee1]">
+            <main className="flex-1 overflow-y-auto p-8 bg-[#222527]">
                 {children}
             </main>
+            <Toaster />
         </div>
     )
 };

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { setCookie } from 'cookies-next';
 
 const loginSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
@@ -24,8 +25,8 @@ export async function action(formData: FormData) {
     if (result.ok) {
         const response = await result.json();
         if ('token' in response && 'tokenRefresh' in response) {
-            localStorage.setItem("token", response.token);
-            localStorage.setItem("refreshToken", response.tokenRefresh);
+            setCookie("token", response.token);
+            setCookie("refreshToken", response.tokenRefresh);
             return { success: true, redirectTo: "/dashboard" };
         }
         else {
@@ -57,8 +58,8 @@ const LoginPage = () => {
             if (result.ok) {
                 const response = await result.json();
                 if ('token' in response && 'tokenRefresh' in response) {
-                    localStorage.setItem("token", response.token);
-                    localStorage.setItem("refreshToken", response.tokenRefresh);
+                    setCookie("token", response.token);
+                    setCookie("refreshToken", response.tokenRefresh);
                     router.push("/dashboard");
                 } else {
                     setState({ ...state, error: "Invalid response from server", isLoading: false });

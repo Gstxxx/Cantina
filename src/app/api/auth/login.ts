@@ -42,6 +42,8 @@ const authApp = new Hono()
             }
             const token = await sign(payload, process.env.JWT_SECRET);
 
+            c.res.headers.append('Set-Cookie', `jwt=${token}; HttpOnly; Path=/; Max-Age=86400;`);
+
             const payloadRefresh = {
                 sub: user.id,
                 role: user.type,
@@ -55,12 +57,7 @@ const authApp = new Hono()
             }
             const tokenRefresh = await sign(payloadRefresh, process.env.JWT_REFRESH_SECRET);
 
-            await prisma.refreshToken.create({
-                data: {
-                    token: tokenRefresh,
-                    authId: user.id,
-                },
-            });
+            c.res.headers.append('Set-Cookie', `refreshToken=${tokenRefresh}; HttpOnly; Path=/; Max-Age=604800;`);
 
             const { password: _, ...userWithoutPassword } = user;
 
@@ -112,12 +109,7 @@ const authApp = new Hono()
 
             const newRefreshToken = await sign(newRefreshPayload, process.env.JWT_REFRESH_SECRET);
 
-            const newRefreshTokenString = newRefreshToken.toString();
-
-            await prisma.refreshToken.update({
-                where: { id: refreshToken.id },
-                data: { token: newRefreshTokenString },
-            });
+            c.res.headers.append('Set-Cookie', `refreshToken=${newRefreshToken}; HttpOnly; Path=/; Max-Age=604800;`);
 
             return c.json({ accessToken: newAccessToken, refreshToken: newRefreshToken }, 200);
         }
