@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { submit as fetchClients } from './ListClients/fetch'
 import { Client } from 'app/types'
 import ListClients from './ListClients/listClients';
-import { CreateClient } from './CreateClient';
+import { CreateClient } from './CreateClient/CreateClient';
 export default function ClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -14,7 +14,7 @@ export default function ClientsPage() {
             if (response.ok) {
                 const data = await response.json();
                 if (Array.isArray(data.clients) && data.clients !== null) {
-                    setClients(data.clients);
+                    setClients(data.clients as Client[]);
                 }
             }
         } catch (error) {

@@ -56,7 +56,7 @@ const clientApp = new Hono()
 
             const totalPages = Math.ceil(totalCount / keysPerPage);
 
-            return c.json({ clients: users, totalPages, totalCount, });
+            return c.json({ clients: users, totalPages, totalCount, }, 200);
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch clients' }, 500);

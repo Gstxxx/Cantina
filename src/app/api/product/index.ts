@@ -22,17 +22,41 @@ const zDeleteProductSchema = z.object({
 const zGetInfoSchema = z.object({
     id: z.number().positive(),
 });
+const zPaginateSchema = z.object({
+    page: z.string(),
+});
 
 const productApp = new Hono()
     .basePath("/product")
     .use(userMiddleware)
     .use(adminMiddleware)
-    .get("/fetch", async (c) => {
+    .get("/fetch", zValidator("query", zPaginateSchema), async (c) => {
         try {
-            const clients = await prisma.product.findMany({
-                where: { deleted_at: null },
-            });
-            return c.json(clients, 200);
+            const page = c.req.query("page");
+            if (!page) {
+                return c.json({ error: "Page is required" }, 400);
+            }
+            const keysPerPage = 60;
+            const skip = keysPerPage * (Number(page) - 1);
+
+            const [products, totalCount] = await Promise.all([
+                prisma.product.findMany({
+                    where: { deleted_at: null },
+                    skip: skip,
+                    take: keysPerPage,
+                }),
+                prisma.product.count({
+                    where: { deleted_at: null },
+                }),
+            ]);
+
+            if (!products || products.length === 0) {
+                return c.json({ error: "No products found" }, 404);
+            }
+
+            const totalPages = Math.ceil(totalCount / keysPerPage);
+
+            return c.json({ products: products, totalPages, totalCount, }, 200);
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch clients' }, 500);

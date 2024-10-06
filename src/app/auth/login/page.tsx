@@ -77,32 +77,32 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-            <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded shadow-md">
-                <h2 className="text-lg font-bold mb-4">Login</h2>
+        <div className="bg-[#272b2f] border-transparent border-0 flex items-center justify-center h-screen">
+            <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg bg-[#222527] border-transparent border-0 p-10 w-[400px]">
+                <h2 className="text-lg font-bold mb-4 text-orange-500 font-bold">Login</h2>
                 <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium">Email</label>
+                    <label htmlFor="email" className="block text-sm font-medium text-orange-500">Email</label>
                     <input
                         type="email"
                         id="email"
-                        className="mt-1 block w-full border rounded-md p-2"
+                        className="mt-1 block w-full border rounded-md p-2 text-white bg-[#272b2f] border-transparent border-0 active:border-orange-500"
                         required
                         {...register("email")}
                     />
-                    {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
+                    {errors.email && <p className="text-xl font-bold text-red-500 m-4">{errors.email.message as string}</p>}
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="password" className="block text-sm font-medium">Password</label>
+                    <label htmlFor="password" className="block text-sm font-medium text-orange-500">Password</label>
                     <input
                         type="password"
                         id="password"
-                        className="mt-1 block w-full border rounded-md p-2"
+                        className="mt-1 block w-full border rounded-md p-2 text-white bg-[#272b2f] border-transparent border-0 active:border-orange-500"
                         required
                         {...register("password")}
                     />
                     {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
                 </div>
-                <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded" disabled={state.isLoading}>
+                <button type="submit" className="w-full bg-orange-500 text-white p-2 rounded" disabled={state.isLoading}>
                     {state.isLoading ? "Logging in..." : "Login"}
                 </button>
             </form>

@@ -1,27 +1,16 @@
-// types.ts (You can create this file to keep your types organized)
 export interface Auth {
     id: number;
     email: string;
+    name: string;
     password: string;
     type: string;
-    refreshToken: string;
+    refreshTokens: RefreshToken[];
 }
-export interface Product {
+
+export interface RefreshToken {
     id: number;
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
-    productId: number;
-    purchaseRecordId: number;
-    quantity: number;
-    product: {
-        id: number;
-        name: string;
-        price: number;
-        created_at: string;
-        updated_at: string;
-        deleted_at: string | null;
-    };
+    token: string;
+    authId: number | null;
 }
 
 export interface Client {
@@ -31,6 +20,17 @@ export interface Client {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+    purchases: PurchaseRecord[];
+}
+
+export interface Product {
+    id: number;
+    name: string;
+    price: number;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    products: ProductPurchase[];
 }
 
 export interface PurchaseRecord {
@@ -41,7 +41,16 @@ export interface PurchaseRecord {
     deleted_at: string | null;
     clientId: number;
     client: Client;
-    products: Product[];
+    products: ProductPurchase[];
+}
+
+export interface ProductPurchase {
+    id: number;
+    productId: number;
+    purchaseRecordId: number;
+    quantity: number;
+    product: Product;
+    record: PurchaseRecord;
 }
 
 export interface GenerateReportRequest {
