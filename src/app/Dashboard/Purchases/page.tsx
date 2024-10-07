@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
 import { Card } from '@/components/card/card'
 import { getCookie } from 'cookies-next'
-import { ListPurchases } from '@/components/card/list_purchases'
+import { ListPurchases } from "./ListPurchase/ListPurchase"
 import * as React from "react"
 
 import { Calendar } from "@/components/ui/calendar"
