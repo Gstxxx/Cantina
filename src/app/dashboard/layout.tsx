@@ -8,10 +8,10 @@ import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
 
 const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Clientes', href: '/dashboard/clients', icon: Users },
-    { name: 'Produtos', href: '/dashboard/products', icon: Package },
-    { name: 'Vendas', href: '/dashboard/purchases', icon: ShoppingCart },
+    { name: 'Dashboard', href: '/Dashboard', icon: LayoutDashboard },
+    { name: 'Clientes', href: '/Dashboard/Clients', icon: Users },
+    { name: 'Produtos', href: '/Dashboard/Products', icon: Package },
+    { name: 'Vendas', href: '/Dashboard/Purchases', icon: ShoppingCart },
 ]
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
