@@ -1,6 +1,6 @@
 'use client'
 import { ReactNode, useEffect } from 'react';
-import { LayoutDashboard, Users, Package, ShoppingCart } from "lucide-react"
+import { Users, Package, ShoppingCart } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
@@ -8,10 +8,9 @@ import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
 
 const navItems = [
-    { name: 'Dashboard', href: '/Dashboard', icon: LayoutDashboard },
+    { name: 'Compras', href: '/Dashboard/Purchases', icon: ShoppingCart },
     { name: 'Clientes', href: '/Dashboard/Clients', icon: Users },
     { name: 'Produtos', href: '/Dashboard/Products', icon: Package },
-    { name: 'Vendas', href: '/Dashboard/Purchases', icon: ShoppingCart },
 ]
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {

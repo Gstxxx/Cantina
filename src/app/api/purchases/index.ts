@@ -13,6 +13,16 @@ const zCreatePurchase = z.object({
         })
     )
 });
+const zUpdatePurchase = z.object({
+    id: z.number(),
+    clientId: z.number(),
+    products: z.array(
+        z.object({
+            productId: z.number(),
+            quantity: z.number().min(1)
+        })
+    )
+});
 
 const zDeletePurchase = z.object({
     purchaseId: z.number()
@@ -87,6 +97,43 @@ const purchaseApp = new Hono()
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch purchases' }, 500);
+        }
+    }).post('/edit', zValidator('json', zUpdatePurchase), async (c) => {
+        const body = c.req.valid('json');
+
+        try {
+            const purchase = await prisma.purchaseRecord.findUnique({
+                where: { id: body.id, deleted_at: null },
+            });
+
+            if (!purchase) {
+                return c.json({ error: 'Purchase not found' }, 404);
+            }
+
+            await prisma.purchaseRecord.deleteMany({
+                where: { id: body.id },
+            });
+
+            const updatedPurchase = await prisma.purchaseRecord.update({
+                where: { id: body.id },
+                data: {
+                    clientId: body.clientId,
+                    products: {
+                        create: body.products.map((p: { productId: number, quantity: number }) => ({
+                            productId: p.productId,
+                            quantity: p.quantity,
+                        })),
+                    },
+                },
+                include: {
+                    products: true,
+                },
+            });
+
+            return c.json(updatedPurchase, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to update purchase' }, 500);
         }
     })
     .post('/delete', zValidator('json', zDeletePurchase), async (c) => {
