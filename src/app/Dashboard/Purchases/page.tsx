@@ -17,12 +17,16 @@ import { format } from "date-fns"
 import PurchaseModal from './CreatePurchase/page'
 
 const PurchaseAnalysis = () => {
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
     const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter();
-    const [startDate, setStartDate] = React.useState<Date | undefined>(new Date())
-    const [endDate, setEndDate] = React.useState<Date | undefined>(new Date())
+    const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
+    const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const toggleModal = () => {
@@ -74,6 +78,7 @@ const PurchaseAnalysis = () => {
         sum + purchase.products.reduce((pSum, product) => pSum + (product.quantity * product.product.price), 0), 0)
     const averageOrderValue = totalRevenue / totalPurchases
     const odervalstring = 'R$' + (averageOrderValue / 100).toFixed(2);
+    const totalRevenueFormatted = 'R$' + (totalRevenue / 100).toFixed(2);
     const productSales = purchases.reduce((acc, purchase) => {
         purchase.products.forEach(product => {
             if (acc[product.product.name]) {
@@ -134,19 +139,19 @@ const PurchaseAnalysis = () => {
             {isModalOpen && <PurchaseModal />}
             {totalPurchases > 0 && (
                 <div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                         <Card title="Total de Compras" value={totalPurchases} />
                         <Card title="Total de Quantidade Vendida" value={totalQuantity} />
-                        <Card title="Total de Receita" value={totalRevenue} />
+                        <Card title="Total de Receita" value={totalRevenueFormatted} />
                         <Card title="Valor Médio do Pedido" value={odervalstring} />
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                        <Graphic title="Distribuição de Vendas de Produtos" values={productSalesData} />
-                        <PizzaGrafic title="Gráfico de Pizza de Vendas de Produtos" values={productSalesData} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
+                        <div className='flex flex-col gap-4'>
+                            <Graphic title="Distribuição de Vendas de Produtos" values={productSalesData} />
+                            <PizzaGrafic title="Gráfico de Pizza de Vendas de Produtos" values={productSalesData} />
+                        </div>
+                        <ListPurchases title="Lista de Vendas" purchases={purchases as PurchaseRecord[]} />
                     </div>
-
-                    <ListPurchases title="Lista de Vendas" purchases={purchases as PurchaseRecord[]} />
                 </div>
             )} {totalPurchases === 0 && (
                 <h1 className="text-bold text-3xl text-orange-500">Sem registros nesse periodo</h1>)}

@@ -16,14 +16,14 @@ export function PizzaGrafic({ title, values }: { title: string, values: GraphicP
             <CardHeader>
                 <CardTitle className="text-orange-500">{title}</CardTitle>
             </CardHeader>
-            <CardContent>
-                <PieChart width={500} height={300}>
+            <CardContent className='flex items-center justify-center h-[250px]'>
+                <PieChart width={400} height={250}  >
                     <Pie
                         data={values}
-                        cx={250}
-                        cy={150}
+                        cx={200}
+                        cy={125}
                         labelLine={false}
-                        outerRadius={80}
+                        outerRadius={70}
                         fill="#FFFFFF"
                         dataKey="quantity"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -35,6 +35,6 @@ export function PizzaGrafic({ title, values }: { title: string, values: GraphicP
                     <Tooltip />
                 </PieChart>
             </CardContent>
-        </Card>
+        </Card >
     )
 }

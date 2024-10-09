@@ -4,6 +4,8 @@ import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fet
 import { submit as fetchUsers } from 'app/Dashboard/Clients/ListClients/fetch';
 import { Client } from 'app/types';
 
+import { TrashIcon } from "@radix-ui/react-icons"
+
 type Product = {
     id: number;
     name: string;
@@ -14,6 +16,7 @@ type Product = {
 };
 
 const PurchaseModal = () => {
+    const [isModalOpen, setIsModalOpen] = useState(true);
     const [clients, setClients] = useState<Client[]>([]);
     const [filteredClients, setFilteredClients] = useState<Client[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
@@ -55,7 +58,7 @@ const PurchaseModal = () => {
         const response = await fetchProducts();
         if (response.status === 200) {
             const { products } = await response.json();
-            setProducts((prevProducts) => [...prevProducts, ...products]);
+            setProducts(products);
             setFilteredProducts(products);
         } else {
             console.error('Error fetching products:', response);
@@ -64,6 +67,14 @@ const PurchaseModal = () => {
 
     const addToCart = (productId: number, quantity: number) => {
         setCart([...cart, { productId, quantity }]);
+    };
+
+    const removeFromCart = (productId: number) => {
+        setCart(cart.filter(item => item.productId !== productId));
+    };
+
+    const updateCartQuantity = (productId: number, quantity: number) => {
+        setCart(cart.map(item => item.productId === productId ? { ...item, quantity } : item));
     };
 
     const handleSubmit = async () => {
@@ -77,6 +88,7 @@ const PurchaseModal = () => {
                 await createPurchase(purchaseData);
                 alert('Compra criada com sucesso!');
                 setCart([]);
+                setIsModalOpen(false);
             } catch (error) {
                 console.error('Erro ao criar compra', error);
             }
@@ -106,71 +118,95 @@ const PurchaseModal = () => {
     const handleProductSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = e.target.value.toLowerCase();
         setProductSearchTerm(searchTerm);
-        setFilteredProducts(products.filter(product => product.name.toLowerCase().includes(searchTerm)));
+        setFilteredProducts(products.filter(product =>
+            (product.name.toLowerCase().includes(searchTerm) ||
+                product.id.toString().includes(searchTerm)) &&
+            product.deleted_at === null
+        ));
     };
+
+    if (!isModalOpen) return null;
 
     return (
         <div className="modal fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
-            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
+            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-[1000px]">
                 <h2 className="text-xl font-bold mb-4 text-orange-500">Criar Compra</h2>
-                <div className='flex flex-col gap-2'>
-                    <label className='text-white font-bold text-xl'>Cliente</label>
-                    <input
-                        className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                        value={clientSearchTerm}
-                        onChange={handleClientSearch}
-                        placeholder="Pesquisar cliente"
-                    />
-                    <select
-                        className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                        value={selectedClient || ''}
-                        onChange={(e) => setSelectedClient(Number(e.target.value))}
-                    >
-                        <option className='text-white hover:bg-orange-500' value="" disabled>Selecione um cliente</option>
-                        {filteredClients.map((client) => (
-                            <option key={client.id} value={client.id}>
-                                {client.name}
-                            </option>
-                        ))}
-                    </select>
+                <div className='grid grid-cols-2 gap-8'>
+                    <div >
+                        <div className='flex flex-col gap-2'>
+                            <h3 className='text-gray-400 font-bold text-xl'>Cliente</h3>
+                            <input
+                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                value={clientSearchTerm}
+                                onChange={handleClientSearch}
+                                placeholder="Pesquisar cliente"
+                            />
+                            <select
+                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                value={selectedClient || ''}
+                                onChange={(e) => setSelectedClient(Number(e.target.value))}
+                            >
+                                <option className='text-white hover:bg-orange-500' value="" disabled>Selecione um cliente</option>
+                                {filteredClients.map((client) => (
+                                    <option key={client.id} value={client.id}>
+                                        {client.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <button className='bg-green-500 text-white p-2 rounded-md mt-2' onClick={loadMoreClients}>Carregar Mais Clientes</button>
+                        </div>
 
-                    <button className='text-green-500 text-sm' onClick={loadMoreClients}>Carregar mais clientes</button>
+                        <div className='mt-4 flex flex-col gap-2 mb-4'>
+                            <h3 className='text-gray-400 font-bold text-xl'>Pesquisar produto</h3>
+                            <input
+                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                value={productSearchTerm}
+                                onChange={handleProductSearch}
+                                placeholder="Pesquisar produto"
+                            />
+                            <select multiple className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md mb-4 h-[300px] overflow-y-auto' onChange={(e) => {
+                                const selectedOptions = Array.from(e.target.options)
+                                    .filter(option => option.selected)
+                                    .map(option => option.value);
+                                selectedOptions.forEach(id => addToCart(Number(id), 1));
+                            }}>
+                                {filteredProducts.map((product) => (
+                                    <option className='text-white hover:bg-orange-500 text-bold' key={product.id} value={product.id}>
+                                        {product.name} - R$ {(product.price / 100).toFixed(2)}
+                                    </option>
+                                ))}
+                            </select>
+                            <button className='bg-green-500 text-white p-2 rounded-md' onClick={loadMoreProducts}>Carregar Mais Produtos</button>
+                        </div>
+                    </div>
+
+                    <div >
+                        <h3 className='text-gray-400 font-bold text-xl'>Carrinho</h3>
+                        <div className='h-[700px] overflow-y-auto bg-[#222527] rounded-md p-4 flex flex-col gap-4'>
+                            {cart.map((item, index) => {
+                                const product = products.find((p) => p.id === item.productId);
+                                return (
+                                    <div key={index} className='flex justify-between items-center bg-orange-500/20 rounded-md p-2'>
+                                        <span>{product?.name}</span>
+                                        <div className='flex items-center gap-2'>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="99"
+                                                value={item.quantity}
+                                                onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
+                                                className='text-white bg-[#222527] border-transparent border-0 rounded-md p-2 w-[50px]'
+                                            />
+                                            <button className='text-red-500 text-sm' onClick={() => removeFromCart(item.productId)}><TrashIcon /></button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
-
-                <div className='flex flex-col gap-2'>
-                    <label className='text-white font-bold text-xl'>Pesquisar produto</label>
-                    <input
-                        className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                        value={productSearchTerm}
-                        onChange={handleProductSearch}
-                        placeholder="Pesquisar produto"
-                    />
-                    <select className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md' onChange={(e) => addToCart(Number(e.target.value), 1)}>
-                        <option className='text-white hover:bg-orange-500' value="" disabled>Selecione um produto</option>
-                        {filteredProducts.map((product) => (
-                            <option key={product.id} value={product.id}>
-                                {product.name} - R$ {(product.price / 100).toFixed(2)}
-                            </option>
-                        ))}
-                    </select>
-
-                    <button className='text-green-500 text-sm' onClick={loadMoreProducts}>Carregar mais produtos</button>
-                </div>
-
-                <div>
-                    <h3 className='text-white font-bold text-xl'>Carrinho</h3>
-                    {cart.map((item, index) => {
-                        const product = products.find((p) => p.id === item.productId);
-                        return (
-                            <div key={index} className='flex justify-between items-center my-4 bg-orange-500/20 rounded-md p-4'>
-                                <span>{product?.name}</span>
-                                <span>Quantidade: {item.quantity}</span>
-                            </div>
-                        );
-                    })}
-                </div>
-
                 <button className='bg-orange-500 text-white p-4 rounded-md' onClick={handleSubmit}>Criar Compra</button>
+                <button className='bg-red-500 text-white p-4 rounded-md ml-4' onClick={() => setIsModalOpen(false)}>Fechar</button>
             </div>
         </div>
     );

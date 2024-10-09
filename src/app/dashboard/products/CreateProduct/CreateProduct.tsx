@@ -68,7 +68,7 @@ export function CreateProduct() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className='rounded-lg bg-[#272b2f] border-transparent border-0 max-h-[80vh] overflow-auto max-h-[325px]'>
+        <form onSubmit={handleSubmit} className='rounded-lg bg-[#272b2f] border-transparent border-0 overflow-auto max-h-[325px]'>
             <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold text-orange-500">Criar Produto</CardTitle>

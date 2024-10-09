@@ -41,7 +41,7 @@ export function CreateClient() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className='rounded-lg bg-[#272b2f] border-transparent border-0 max-h-[80vh] overflow-auto max-h-[325px]'>
+        <form onSubmit={handleSubmit} className='rounded-lg bg-[#272b2f] border-transparent border-0 overflow-auto max-h-[320px]'>
 
             <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
                 <CardHeader>

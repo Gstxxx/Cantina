@@ -138,13 +138,13 @@ export default function ListProducts() {
     };
 
     return (
-        <div className='rounded-lg bg-[#272b2f] border-transparent border-0 overflow-auto'>
+        <div className='rounded-lg bg-[#272b2f] border-transparent border-0'>
             <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
-                <CardHeader className="space-y-1">
+                <CardHeader >
                     <CardTitle className="text-2xl text-orange-500">Administrar produtos</CardTitle>
                     <CardDescription>Ver e atualizar produtos</CardDescription>
                 </CardHeader>
-                <CardContent className="overflow-auto">
+                <CardContent>
                     {error && <div className="text-red-500">{error}</div>}
 
                     <div className="flex space-x-2 mb-4">
@@ -159,12 +159,12 @@ export default function ListProducts() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className='text-orange-500'>Nome</TableHead>
-                                <TableHead className='text-orange-500'>Preço</TableHead>
-                                <TableHead className='text-orange-500'>Criado em</TableHead>
-                                <TableHead className='text-orange-500'>Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
+                                <TableHead className='text-orange-500 text-left text-xl'>Nome</TableHead>
+                                <TableHead className='text-orange-500 text-left text-xl'>Preço</TableHead>
+                                <TableHead className='text-orange-500 text-left text-xl'>Criado em</TableHead>
+                                <TableHead className='text-orange-500 text-left text-xl'>Ações</TableHead>
+                            </TableRow >
+                        </TableHeader >
                         <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
                             {filteredUsers.map((product) => (
                                 <TableRow key={product.id}>
@@ -173,7 +173,6 @@ export default function ListProducts() {
                                     <TableCell>{formatDate(product.created_at)}</TableCell>
                                     <TableCell >
                                         <DropdownMenu >
-
                                             <DropdownMenuTrigger asChild >
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
                                                     <span className="sr-only">Abrir Menu</span>
@@ -181,7 +180,7 @@ export default function ListProducts() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent
-                                                className="bg-[#222527] border-transparent border-0 p-4" align="end">
+                                                className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
                                                 <DropdownMenuItem className="text-white" onClick={() => handleEditUser(product)}>
                                                     Editar
                                                 </DropdownMenuItem>
@@ -201,7 +200,7 @@ export default function ListProducts() {
                                 </TableRow>
                             ))}
                         </TableBody>
-                    </Table>
+                    </Table >
 
                     {editingProduct && (
                         <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
@@ -241,9 +240,10 @@ export default function ListProducts() {
                                 </form>
                             </div>
                         </div>
-                    )}
+                    )
+                    }
 
-                </CardContent>
+                </CardContent >
                 <div className="mt-4 flex justify-center items-center space-x-2">
                     <Button
                         onClick={() => paginate(currentPage - 1)}
@@ -264,7 +264,7 @@ export default function ListProducts() {
                 <div className="mt-2 text-center text-sm text-gray-500">
                     Total de Clientes: {totalCount}
                 </div>
-            </Card>
+            </Card >
         </div >
     );
 }

@@ -80,9 +80,9 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
             </CardHeader>
             <CardContent>
 
-                <Table>
+                <Table className='max-h-screen overflow-auto h-[500px]' >
                     <TableHeader>
-                        <TableRow>
+                        <TableRow className='bg-[#222527]/50 border-transparent border-0 p-4 rounded-lg py-8'>
                             <TableHead className='text-orange-500'>ID</TableHead>
                             <TableHead className='text-orange-500'>Data</TableHead>
                             <TableHead className='text-orange-500'>Cliente</TableHead>
@@ -91,7 +91,7 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
                             <TableHead className='text-orange-500'>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
-                    <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
+                    <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg' >
                         {purchases.map((purchase) => (
                             <TableRow key={purchase.id}>
                                 <TableCell>{purchase.id}</TableCell>
@@ -115,9 +115,9 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent
-                                            className="bg-[#222527] border-transparent border-0 p-4" align="end">
+                                            className="bg-[#272b2f] border-transparent border-0 py-4 px-2 flex flex-col" align="end">
                                             <DropdownMenuItem className="text-white" onClick={() => handleEdit(purchase)}>
-                                                Editar
+                                                <button className="text-white p-2 bg-green-500 hover:bg-green-700 rounded-md mb-2 w-full">Editar</button>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => {
@@ -127,7 +127,8 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
                                                 }}
                                                 className="text-red-600"
                                             >
-                                                Deletar
+                                                <button className="text-white p-2 bg-red-500 hover:bg-red-700 rounded-md w-full">Deletar</button>
+
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

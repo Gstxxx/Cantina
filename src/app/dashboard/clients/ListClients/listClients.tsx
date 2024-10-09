@@ -131,9 +131,9 @@ export default function ListUsers() {
     };
 
     return (
-        <div className='rounded-lg bg-[#272b2f] border-transparent border-0 max-h-[80vh] overflow-auto'>
-            <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
-                <CardHeader className="space-y-1">
+        <div className='rounded-lg bg-[#272b2f] border-transparent border-0'>
+            <Card className='border-transparent border-0'>
+                <CardHeader >
                     <CardTitle className="text-2xl text-orange-500">Administrar Clientes</CardTitle>
                     <CardDescription>Ver e atualizar clientes</CardDescription>
                 </CardHeader>
@@ -155,7 +155,7 @@ export default function ListUsers() {
                                 <TableHead className='text-orange-500'>Nome</TableHead>
                                 <TableHead className='text-orange-500'>Celular</TableHead>
                                 <TableHead className='text-orange-500'>Criado em</TableHead>
-                                <TableHead></TableHead>
+                                <TableHead className='text-orange-500'>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
@@ -174,7 +174,7 @@ export default function ListUsers() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent
-                                                className="bg-[#222527] border-transparent border-0 p-4" align="end">
+                                                className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
                                                 <DropdownMenuItem className="text-white" onClick={() => handleEditUser(user)}>
                                                     Editar
                                                 </DropdownMenuItem>

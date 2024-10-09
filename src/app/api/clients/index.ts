@@ -32,7 +32,7 @@ const clientApp = new Hono()
             if (!page) {
                 return c.json({ error: "Page is required" }, 400);
             }
-            const keysPerPage = 60;
+            const keysPerPage = 20;
             const skip = keysPerPage * (Number(page) - 1);
 
             const [clients, totalCount] = await Promise.all([

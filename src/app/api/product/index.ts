@@ -36,7 +36,7 @@ const productApp = new Hono()
             if (!page) {
                 return c.json({ error: "Page is required" }, 400);
             }
-            const keysPerPage = 60;
+            const keysPerPage = 20;
             const skip = keysPerPage * (Number(page) - 1);
 
             const [products, totalCount] = await Promise.all([
