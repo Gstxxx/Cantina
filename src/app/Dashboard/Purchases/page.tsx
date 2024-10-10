@@ -185,7 +185,7 @@ const PurchaseAnalysis = () => {
                             <Graphic title="Top 5 produtos vendidos" values={productSalesData} />
                             <PizzaGrafic title="Top 10 produtos vendidos" values={productSalesData} />
                         </div>
-                        <UICard className='rounded-lg bg-[#272b2f] border-transparent border-0 w-full'>
+                        <UICard className='rounded-lg bg-[#272b2f] border-transparent border-0 w-full max-h-[750px]'>
                             <CardHeader>
                                 <CardTitle className="text-orange-500">Lista de Vendas</CardTitle>
                             </CardHeader>
@@ -199,7 +199,7 @@ const PurchaseAnalysis = () => {
                                     >
                                         Anterior
                                     </Button>
-                                    <span className='text-orange-500 font-bold text-medium'>Pagina {currentPage} de {totalPages}</span>
+                                    <span className='text-orange-500 font-bold text-medium pt-4'>Pagina {currentPage} de {totalPages}</span>
                                     <Button
                                         className='p-4 bg-orange-500 text-white rounded-md disabled:bg-gray-500'
                                         disabled={currentPage === totalPages}

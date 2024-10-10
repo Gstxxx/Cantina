@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { prisma } from 'lib/prisma';
+import { faker } from '@faker-js/faker';
 
 export async function seed() {
     const hashedPassword = await bcrypt.hash('sandra0714', 10);
@@ -14,8 +15,8 @@ export async function seed() {
     for (let i = 1; i <= 100; i++) {
         await prisma.client.create({
             data: {
-                name: `Client ${i}`,
-                phone: `2${i.toString().padStart(3, '0')}`
+                name: faker.person.fullName(),
+                phone: faker.phone.number({ style: 'national' })
             }
         });
     }
@@ -23,13 +24,13 @@ export async function seed() {
     for (let i = 1; i <= 50; i++) {
         await prisma.product.create({
             data: {
-                name: `Product ${i}`,
-                price: Math.floor(Math.random() * 1000) + 100
+                name: faker.food.dish(),
+                price: Number(faker.commerce.price({ min: 100, max: 2000, dec: 0 }))
             }
         });
     }
 
-    for (let i = 1; i <= 250; i++) {
+    for (let i = 1; i <= 2500; i++) {
         const randomClientId = Math.floor(Math.random() * 15) + 1;
         const randomProductId = Math.floor(Math.random() * 100) + 1;
         const randomQuantity = Math.floor(Math.random() * 10) + 1;
