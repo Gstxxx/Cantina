@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../../../lib/prisma';
 import { adminMiddleware, userMiddleware } from '../middlewere/authmiddlewere';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 const zCreatePurchase = z.object({
     clientId: z.number(),
@@ -36,6 +37,12 @@ const zFetchReportPaginate = z.object({
     start: z.string(),
     end: z.string(),
     page: z.number()
+});
+
+const zGeneratePDF = z.object({
+    clientId: z.number(),
+    start: z.string(),
+    end: z.string()
 });
 
 const purchaseApp = new Hono()
@@ -239,6 +246,62 @@ const purchaseApp = new Hono()
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch report' }, 500);
+        }
+    })
+    .post('/generate-pdf', zValidator('json', zGeneratePDF), async (c) => {
+        const { clientId, start, end } = c.req.valid('json');
+
+        try {
+            // Fetch client details
+            const client = await prisma.client.findUnique({
+                where: { id: clientId, deleted_at: null },
+            });
+
+            if (!client) {
+                return c.json({ error: 'Client not found' }, 404);
+            }
+
+            const purchases = await prisma.purchaseRecord.findMany({
+                where: {
+                    clientId: clientId,
+                    purchaseDate: {
+                        gte: new Date(start),
+                        lt: new Date(end)
+                    }
+                },
+                include: {
+                    products: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+
+            if (!purchases || purchases.length === 0) {
+                return c.json({ error: 'No purchases found for the specified period' }, 404);
+            }
+
+            // Prepare data for frontend
+            const dataForFrontend = {
+                client: {
+                    id: client.id,
+                    name: client.name,
+                },
+                purchases: purchases.map(purchase => ({
+                    date: purchase.purchaseDate,
+                    products: purchase.products.map(product => ({
+                        name: product.product.name,
+                        quantity: product.quantity,
+                        price: product.product.price,
+                    })),
+                })),
+            };
+
+            return c.json(dataForFrontend, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to generate PDF' }, 500);
         }
     });
 

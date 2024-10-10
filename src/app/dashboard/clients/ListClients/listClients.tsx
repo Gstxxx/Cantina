@@ -14,6 +14,8 @@ import { MoreHorizontal } from "lucide-react";
 import { submit as fetchUsers } from './fetch';
 import { submit as submitDeleteUser } from './delete';
 import { submit as submitUpdateUser } from './update';
+import { submit as submitGeneratePDF } from './generatePdf';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export async function action(formData: FormData) {
     const intent = formData.get("intent");
@@ -42,7 +44,17 @@ export async function action(formData: FormData) {
         }
         return { error: "Cliente não encontrado ou inválido." };
     }
-
+    if (intent === "Generate-PDF") {
+        const clientId = Number(formData.get("clientId")?.toString());
+        const currentDate = new Date();
+        const start = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1).toString().padStart(2, '0') + '-01';
+        const end = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1).toString().padStart(2, '0') + '-' + currentDate.getDate().toString().padStart(2, '0');
+        const result = await submitGeneratePDF({ clientId, start, end });
+        if (result.ok) {
+            return { success: "PDF gerado com sucesso" };
+        }
+        return { error: "PDF não encontrado ou inválido." };
+    }
     return { error: "Invalid intent." };
 }
 
@@ -50,11 +62,109 @@ export default function ListUsers() {
     const [users, setUsers] = useState<Client[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<Client | null>(null);
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
+    const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
 
+    const fetchPDF = async (id: number) => {
+        try {
+            if (!startDate?.toISOString().split('T')[0] || !endDate?.toISOString().split('T')[0]) {
+                setError('No purchases found for the selected period.');
+                return;
+            }
+            const response = await submitGeneratePDF({
+                clientId: id,
+                start: startDate?.toISOString().split('T')[0],
+                end: endDate?.toISOString().split('T')[0]
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            if (data === null) {
+                setError('No purchases found for the selected period.');
+            } else {
+                const pdfDoc = await PDFDocument.create();
+                const page = pdfDoc.addPage([600, 400]);
+                const timesRomanFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+                // Draw header
+                page.drawText(data.client.name, {
+                    x: 50,
+                    y: 370,
+                    size: 12,
+                    font: timesRomanFont,
+                    color: rgb(0, 0, 0),
+                });
+                page.drawText('Outubro 2024', {
+                    x: 450,
+                    y: 370,
+                    size: 12,
+                    font: timesRomanFont,
+                    color: rgb(0, 0, 0),
+                });
+
+                // Draw table header
+                page.drawText('Produto', { x: 50, y: 340, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                page.drawText('Data', { x: 150, y: 340, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                page.drawText('Quantidade', { x: 250, y: 340, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                page.drawText('Valor', { x: 350, y: 340, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                page.drawText('Total', { x: 450, y: 340, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+
+                let yPosition = 320;
+                let totalAmount = 0;
+
+                data.purchases.forEach(purchase => {
+                    purchase.products.forEach(product => {
+                        const total = product.quantity * product.price;
+                        totalAmount += total;
+
+                        page.drawText(product.name, { x: 50, y: yPosition, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                        page.drawText(new Date(purchase.date).toLocaleDateString(), { x: 150, y: yPosition, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                        page.drawText(product.quantity.toString(), { x: 250, y: yPosition, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                        page.drawText(`R$${(product.price / 100).toFixed(2)}`, { x: 350, y: yPosition, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+                        page.drawText(`R$${(purchase.products.reduce((sum, product) => sum + (product.quantity * product.price), 0) / 100).toFixed(2)}`, { x: 450, y: yPosition, size: 10, font: timesRomanFont, color: rgb(0, 0, 0) });
+
+                        yPosition -= 20;
+                    });
+                });
+
+                // Draw total amount
+                page.drawText(`Valor total a pagar: R$${(totalAmount / 100).toFixed(2)}`, {
+                    x: 50,
+                    y: yPosition - 20,
+                    size: 12,
+                    font: timesRomanFont,
+                    color: rgb(0, 0, 0),
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+
+                // Format the client's name for the filename
+                const formattedName = data.client.name.toLowerCase().replace(/\s+/g, '_');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${formattedName}_purchases.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        } catch (err) {
+            console.log(err);
+            setError('Failed to fetch purchase data');
+        }
+    };
     const fetchUsersData = async (page: number) => {
         try {
             const response = await fetchUsers(page);
@@ -109,6 +219,14 @@ export default function ListUsers() {
         } else if ('error' in result) {
             setError(result.error);
         }
+    };
+
+    const handleGeneratePDF = async (id: number) => {
+        const formData = new FormData();
+        formData.append("intent", "Generate-PDF");
+        formData.append("clientId", id.toString());
+
+        fetchPDF(id);
     };
 
     const formatDate = (dateString: string) => {
@@ -180,13 +298,19 @@ export default function ListUsers() {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     onClick={() => {
-                                                        if (window.confirm('Você deseja deletar o cliente?')) {
+                                                        if (window.confirm('Você deseja deletar o produto?')) {
                                                             handleDeleteUser(user.id);
                                                         }
                                                     }}
                                                     className="text-red-600"
                                                 >
                                                     Deletar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleGeneratePDF(user.id)}
+                                                    className="text-blue-600"
+                                                >
+                                                    Gerar PDF
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

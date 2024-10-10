@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { Graphic } from '@/components/card/graphic'
-import { PizzaGrafic } from '@/components/card/pizza_grafic'
+import { TopBuyersChart } from '@/components/chart/top-buyers-chart'
 import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
 import { Card } from '@/components/card/card'
@@ -21,14 +21,14 @@ const PurchaseAnalysis = () => {
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
+    const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
 
     const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
     const [purchasesPaginated, setPurchasesPaginated] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter();
-    const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
-    const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -126,6 +126,20 @@ const PurchaseAnalysis = () => {
 
     const productSalesData = Object.entries(productSales).map(([name, quantity]) => ({ name, quantity }))
 
+    const buyerData = purchases.reduce((acc, purchase) => {
+        const buyerName = purchase.client.name;
+        if (acc[buyerName]) {
+            acc[buyerName] += 1;
+        } else {
+            acc[buyerName] = 1;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    const topBuyersData = Object.entries(buyerData)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Get top 10 buyers
 
     return (
         <div className="p-4 space-y-4 text-white ">
@@ -182,7 +196,7 @@ const PurchaseAnalysis = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                         <div className='flex flex-col gap-4'>
                             <Graphic title="Top 5 produtos vendidos" values={productSalesData} />
-                            <PizzaGrafic title="Top 10 produtos vendidos" values={productSalesData} />
+                            <TopBuyersChart title="Top 10 compradores" values={topBuyersData} />
                         </div>
                         <UICard className='rounded-lg bg-[#272b2f] border-transparent border-0 w-full max-h-[750px]'>
                             <CardHeader>
