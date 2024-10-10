@@ -1,7 +1,6 @@
 import React from 'react'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { BarChart, ResponsiveContainer, XAxis, YAxis, Bar, Tooltip } from "recharts"
 
 
 interface GraphicProps {
@@ -10,31 +9,29 @@ interface GraphicProps {
 }
 
 export function Graphic({ title, values }: { title: string, values: GraphicProps[] }) {
-    const sortedValues = values.sort((a, b) => b.quantity - a.quantity);
+    const sortedValues = values.sort((a, b) => b.quantity - a.quantity).slice(0, 5);
     return (
         <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
             <CardHeader>
                 <CardTitle className="text-orange-500">{title}</CardTitle>
             </CardHeader>
             <CardContent>
-                <ChartContainer
-                    config={{
-                        quantity: {
-                            label: "Vendidos: ",
-                            color: "hsl(var(--chart-1))",
-                        },
-                    }}
-                    className="h-[200px]"
-                >
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={sortedValues}>
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <ChartTooltip content={<ChartTooltipContent className='bg-[#272b2f] p-4' />} />
-                            <Bar dataKey="quantity" fill="var(--color-quantity)" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                        data={sortedValues}
+                        margin={{
+                            top: 5,
+                            right: 30,
+                            left: 25,
+                            bottom: 5,
+                        }}
+                    >
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip contentStyle={{ backgroundColor: '#272b2f', color: '#eb7316', border: 'none' }} />
+                        <Bar dataKey="quantity" fill="#eb7316" />
+                    </BarChart>
+                </ResponsiveContainer>
             </CardContent>
         </Card>
     )

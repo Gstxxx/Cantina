@@ -32,6 +32,11 @@ const zFetchReport = z.object({
     start: z.string(),
     end: z.string()
 });
+const zFetchReportPaginate = z.object({
+    start: z.string(),
+    end: z.string(),
+    page: z.number()
+});
 
 const purchaseApp = new Hono()
     .basePath('/purchases')
@@ -182,6 +187,55 @@ const purchaseApp = new Hono()
             });
 
             return c.json(purchases, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to fetch report' }, 500);
+        }
+    })
+    .post('/paginate', zValidator('json', zFetchReportPaginate), async (c) => {
+        const { start, end, page } = c.req.valid('json');
+        const keysPerPage = 10;
+        const skip = keysPerPage * (page - 1);
+
+        try {
+            const [PurchaseRecord, totalCount] = await Promise.all([
+                prisma.purchaseRecord.findMany({
+                    where: {
+                        deleted_at: null,
+                        purchaseDate: {
+                            gte: new Date(start),
+                            lte: new Date(end),
+                        },
+                    },
+                    skip: skip,
+                    take: keysPerPage,
+                    include: {
+                        client: true,
+                        products: {
+                            include: {
+                                product: true,
+                            },
+                        },
+                    },
+                }),
+                prisma.purchaseRecord.count({
+                    where: {
+                        deleted_at: null,
+                        purchaseDate: {
+                            gte: new Date(start),
+                            lte: new Date(end),
+                        },
+                    },
+                }),
+            ]);
+
+            if (!PurchaseRecord || PurchaseRecord.length === 0) {
+                return c.json({ error: "No purchases found" }, 404);
+            }
+
+            const totalPages = Math.ceil(totalCount / keysPerPage);
+
+            return c.json({ PurchaseRecord, totalPages, totalCount }, 200);
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to fetch report' }, 500);

@@ -5,16 +5,17 @@ import { PizzaGrafic } from '@/components/card/pizza_grafic'
 import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
 import { Card } from '@/components/card/card'
-import { getCookie } from 'cookies-next'
 import { ListPurchases } from "./ListPurchase/ListPurchase"
 import * as React from "react"
-
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon } from "@radix-ui/react-icons"
 import { format } from "date-fns"
 import PurchaseModal from './CreatePurchase/page'
+import { submit } from './ListPurchase/fetchPaginate';
+import { submit as fetchData } from './ListPurchase/fetch'
+import { Card as UICard, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const PurchaseAnalysis = () => {
     const currentDate = new Date();
@@ -22,51 +23,85 @@ const PurchaseAnalysis = () => {
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
 
     const [purchases, setPurchases] = useState<PurchaseRecord[]>([])
+    const [purchasesPaginated, setPurchasesPaginated] = useState<PurchaseRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter();
     const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
     const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = getCookie('token')?.toString();
-                const response = await fetch('/api/purchases/report', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        start: startDate?.toISOString().split('T')[0],
-                        end: endDate?.toISOString().split('T')[0]
-                    }),
-                })
-                if (!response.ok) {
-                    router.push('/auth/login')
-                }
-                const data = await response.json()
-                if (data === null) {
-                    setError('No purchases found for the selected period.')
-                } else {
-                    setPurchases(data)
-                }
-            } catch (err) {
-                console.log(err)
-                setError('Failed to fetch purchase data')
-            } finally {
-                setLoading(false)
+    const fetchPaginatedData = async (page: number) => {
+        try {
+            if (!startDate?.toISOString().split('T')[0] || !endDate?.toISOString().split('T')[0]) {
+                setError('No purchases found for the selected period.');
+                return;
             }
-        }
+            const response = await submit({
+                page,
+                start: startDate?.toISOString().split('T')[0],
+                end: endDate?.toISOString().split('T')[0]
+            });
 
-        fetchData()
-    }, [router, startDate, endDate])
+            if (!response.ok) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const data = await response.json();
+            if (data === null) {
+                setError('No purchases found for the selected period.');
+            } else {
+                setPurchasesPaginated(data.PurchaseRecord);
+                setTotalPages(data.totalPages);
+            }
+        } catch (err) {
+            console.log(err);
+            setError('Failed to fetch purchase data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDataUnpaginated = async () => {
+        try {
+            if (!startDate?.toISOString().split('T')[0] || !endDate?.toISOString().split('T')[0]) {
+                setError('No purchases found for the selected period.');
+                return;
+            }
+            const response = await fetchData({
+                start: startDate?.toISOString().split('T')[0],
+                end: endDate?.toISOString().split('T')[0]
+            });
+
+            if (!response.ok) {
+                router.push('/auth/login');
+                return;
+            }
+
+            const data = await response.json();
+            if (data === null) {
+                setError('No purchases found for the selected period.');
+            } else {
+                setPurchases(data);
+            }
+        } catch (err) {
+            console.log(err);
+            setError('Failed to fetch purchase data');
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchPaginatedData(currentPage);
+        fetchDataUnpaginated();
+    }, [currentPage, startDate, endDate]);
 
     if (loading) return <div className='text-orange-500'>Loading...</div>
     if (error) return <div>Error: {error}</div>
@@ -147,15 +182,41 @@ const PurchaseAnalysis = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                         <div className='flex flex-col gap-4'>
-                            <Graphic title="Distribuição de Vendas de Produtos" values={productSalesData} />
-                            <PizzaGrafic title="Gráfico de Pizza de Vendas de Produtos" values={productSalesData} />
+                            <Graphic title="Top 5 produtos vendidos" values={productSalesData} />
+                            <PizzaGrafic title="Top 10 produtos vendidos" values={productSalesData} />
                         </div>
-                        <ListPurchases title="Lista de Vendas" purchases={purchases as PurchaseRecord[]} />
+                        <UICard className='rounded-lg bg-[#272b2f] border-transparent border-0 w-full'>
+                            <CardHeader>
+                                <CardTitle className="text-orange-500">Lista de Vendas</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ListPurchases purchasesData={purchasesPaginated} />
+                                <div className="flex justify-between mt-4">
+                                    <Button
+                                        className='p-4 bg-orange-500 text-white rounded-md disabled:bg-gray-500'
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(currentPage - 1)}
+                                    >
+                                        Anterior
+                                    </Button>
+                                    <span className='text-orange-500 font-bold text-medium'>Pagina {currentPage} de {totalPages}</span>
+                                    <Button
+                                        className='p-4 bg-orange-500 text-white rounded-md disabled:bg-gray-500'
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => setCurrentPage(currentPage + 1)}
+                                    >
+                                        Próxima
+                                    </Button>
+                                </div>
+
+                            </CardContent>
+                        </UICard>
                     </div>
                 </div>
-            )} {totalPurchases === 0 && (
+            )
+            } {totalPurchases === 0 && (
                 <h1 className="text-bold text-3xl text-orange-500">Sem registros nesse periodo</h1>)}
-        </div>
+        </div >
     )
 }
 export default PurchaseAnalysis;

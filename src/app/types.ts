@@ -20,7 +20,6 @@ export interface Client {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
-    purchases: PurchaseRecord[];
 }
 
 export interface Product {
@@ -30,7 +29,6 @@ export interface Product {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
-    products: ProductPurchase[];
 }
 
 export interface PurchaseRecord {
@@ -50,7 +48,6 @@ export interface ProductPurchase {
     purchaseRecordId: number;
     quantity: number;
     product: Product;
-    record: PurchaseRecord;
 }
 
 export interface GenerateReportRequest {

@@ -1,7 +1,6 @@
 'use client'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PurchaseRecord } from 'app/types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
     DropdownMenu,
@@ -43,7 +42,7 @@ export async function action(formData: FormData) {
 
     return { error: "Invalid intent." };
 }
-export function ListPurchases({ title, purchases }: { title: string, purchases: PurchaseRecord[] }) {
+export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord[] }) {
     const [error, setError] = useState<string | null>(null);
     const [editingUser, setEditingUser] = useState<PurchaseRecord | null>(null);
 
@@ -73,72 +72,69 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
             setError(result.error);
         }
     };
+
     return (
-        <Card className='rounded-lg bg-[#272b2f] border-transparent border-0 w-full'>
-            <CardHeader>
-                <CardTitle className="text-orange-500">{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
 
-                <Table className='max-h-screen overflow-auto h-[500px]' >
-                    <TableHeader>
-                        <TableRow className='bg-[#222527]/50 border-transparent border-0 p-4 rounded-lg py-8'>
-                            <TableHead className='text-orange-500'>ID</TableHead>
-                            <TableHead className='text-orange-500'>Data</TableHead>
-                            <TableHead className='text-orange-500'>Cliente</TableHead>
-                            <TableHead className='text-orange-500'>Produtos</TableHead>
-                            <TableHead className='text-orange-500'>Total</TableHead>
-                            <TableHead className='text-orange-500'>Actions</TableHead>
+        <div>
+            <Table className='max-h-screen overflow-auto h-[500px]' >
+                <TableHeader>
+                    <TableRow className='bg-[#222527]/50 border-transparent border-0 p-4 rounded-lg py-8'>
+                        <TableHead className='text-orange-500'>ID</TableHead>
+                        <TableHead className='text-orange-500'>Data</TableHead>
+                        <TableHead className='text-orange-500'>Cliente</TableHead>
+                        <TableHead className='text-orange-500'>Produtos</TableHead>
+                        <TableHead className='text-orange-500'>Total</TableHead>
+                        <TableHead className='text-orange-500'>Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg' >
+                    {purchasesData.map((purchase) => (
+                        <TableRow key={purchase.id}>
+                            <TableCell>{purchase.id}</TableCell>
+                            <TableCell>{new Date(purchase.purchaseDate).toLocaleString()}</TableCell>
+                            <TableCell>{purchase.client.name}</TableCell>
+                            <TableCell>
+                                {purchase.products.map((product) => (
+                                    <div key={product.id} className="text-white-500">{product.product.name} (x{product.quantity})</div>
+                                ))}
+                            </TableCell>
+                            <TableCell>
+                                R${(purchase.products.reduce((sum, product) => sum + (product.quantity * product.product.price), 0) / 100).toFixed(2)}
+                            </TableCell>
+                            <TableCell >
+                                <DropdownMenu >
+
+                                    <DropdownMenuTrigger asChild >
+                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <span className="sr-only">Abrir Menu</span>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        className="bg-[#272b2f] border-transparent border-0 py-4 px-2 flex flex-col" align="end">
+                                        <DropdownMenuItem className="text-white" onClick={() => handleEdit(purchase)}>
+                                            <button className="text-white p-2 bg-green-500 hover:bg-green-700 rounded-md mb-2 w-full">Editar</button>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                if (window.confirm('Você deseja deletar a compra?')) {
+                                                    handleDeletePurchase(purchase.id);
+                                                }
+                                            }}
+                                            className="text-red-600"
+                                        >
+                                            <button className="text-white p-2 bg-red-500 hover:bg-red-700 rounded-md w-full">Deletar</button>
+
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
                         </TableRow>
-                    </TableHeader>
-                    <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg' >
-                        {purchases.map((purchase) => (
-                            <TableRow key={purchase.id}>
-                                <TableCell>{purchase.id}</TableCell>
-                                <TableCell>{new Date(purchase.purchaseDate).toLocaleString()}</TableCell>
-                                <TableCell>{purchase.client.name}</TableCell>
-                                <TableCell>
-                                    {purchase.products.map((product) => (
-                                        <div key={product.id} className="text-white-500">{product.product.name} (x{product.quantity})</div>
-                                    ))}
-                                </TableCell>
-                                <TableCell>
-                                    R${(purchase.products.reduce((sum, product) => sum + (product.quantity * product.product.price), 0) / 100).toFixed(2)}
-                                </TableCell>
-                                <TableCell >
-                                    <DropdownMenu >
-
-                                        <DropdownMenuTrigger asChild >
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Abrir Menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent
-                                            className="bg-[#272b2f] border-transparent border-0 py-4 px-2 flex flex-col" align="end">
-                                            <DropdownMenuItem className="text-white" onClick={() => handleEdit(purchase)}>
-                                                <button className="text-white p-2 bg-green-500 hover:bg-green-700 rounded-md mb-2 w-full">Editar</button>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => {
-                                                    if (window.confirm('Você deseja deletar a compra?')) {
-                                                        handleDeletePurchase(purchase.id);
-                                                    }
-                                                }}
-                                                className="text-red-600"
-                                            >
-                                                <button className="text-white p-2 bg-red-500 hover:bg-red-700 rounded-md w-full">Deletar</button>
-
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-
-                {editingUser && (
+                    ))}
+                </TableBody>
+            </Table>
+            {
+                editingUser && (
                     <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
                         <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
                             <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Compra</h2>
@@ -167,8 +163,7 @@ export function ListPurchases({ title, purchases }: { title: string, purchases: 
                             </form>
                         </div>
                     </div>
-                )}
-            </CardContent>
-        </Card>
+                )
+            }</div>
     )
 }
