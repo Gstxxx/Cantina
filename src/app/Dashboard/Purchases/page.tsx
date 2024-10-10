@@ -50,7 +50,6 @@ const PurchaseAnalysis = () => {
             });
 
             if (!response.ok) {
-                router.push('/auth/login');
                 return;
             }
 

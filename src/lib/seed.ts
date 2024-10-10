@@ -21,18 +21,19 @@ export async function seed() {
         });
     }
 
-    for (let i = 1; i <= 50; i++) {
+    const foods = ['Arroz', 'Feijão', 'Macarrão', 'Carne', 'Frango', 'Peixe', 'Salada', 'Sopa', 'Pizza', 'Hambúrguer', 'Cachorro-quente', 'Taco', 'Burrito', 'Sushi', 'Sashimi', 'Tempurá', 'Yakissoba', 'Guioza', 'Harumaki', 'Coxinha', 'Pastel', 'Esfiha', 'Kibe', 'Tabule', 'Quibebe', 'Baião de dois', 'Vatapá', 'Moqueca', 'Bobó de camarão', 'Caruru'];
+    for (let i = 0; i < foods.length; i++) {
         await prisma.product.create({
             data: {
-                name: faker.food.dish(),
-                price: Number(faker.commerce.price({ min: 100, max: 2000, dec: 0 }))
+                name: foods[i],
+                price: Math.floor(Math.random() * 1000) + 100
             }
         });
     }
 
-    for (let i = 1; i <= 2500; i++) {
-        const randomClientId = Math.floor(Math.random() * 15) + 1;
-        const randomProductId = Math.floor(Math.random() * 100) + 1;
+    for (let i = 1; i <= 250; i++) {
+        const randomClientId = Math.floor(Math.random() * 100) + 1;
+        const randomProductId = Math.floor(Math.random() * foods.length) + 1; 
         const randomQuantity = Math.floor(Math.random() * 10) + 1;
         const randomDay = Math.floor(Math.random() * 31) + 1;
 
