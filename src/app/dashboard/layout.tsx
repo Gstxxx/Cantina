@@ -8,9 +8,9 @@ import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
 
 const navItems = [
-    { name: 'Compras', href: '/Dashboard/Purchases', icon: ShoppingCart },
-    { name: 'Clientes', href: '/Dashboard/Clients', icon: Users },
-    { name: 'Produtos', href: '/Dashboard/Products', icon: Package },
+    { name: 'Compras', href: '/dashboard/purchases', icon: ShoppingCart },
+    { name: 'Clientes', href: '/dashboard/clients', icon: Users },
+    { name: 'Produtos', href: '/dashboard/products', icon: Package },
 ]
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
