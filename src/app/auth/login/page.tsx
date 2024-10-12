@@ -60,7 +60,7 @@ const LoginPage = () => {
                 if ('token' in response && 'tokenRefresh' in response) {
                     setCookie("token", response.token);
                     setCookie("refreshToken", response.tokenRefresh);
-                    router.push("/Dashboard/Purchases");
+                    router.push("/dashboard/purchases");
                 } else {
                     setState({ ...state, error: "Invalid response from server", isLoading: false });
                 }
