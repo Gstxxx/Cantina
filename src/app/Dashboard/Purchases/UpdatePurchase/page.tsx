@@ -1,69 +1,39 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { submit as updatePurchase } from './update';
 import { submit as fetchProducts } from '../../products/ListProducts/fetch';
-import { submit as fetchUsers } from '../../clients/ListClients/fetch';
-import { submit as searchUsers } from '../../clients/ListClients/search';
 import { submit as searchProducts } from '../../products/ListProducts/search';
-import { PurchaseRecord, Client } from 'app/types';
-import { TrashIcon, CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-} from "@/components/ui/command";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+import { PurchaseRecord, Product } from 'app/types';
 import { Button } from "@/components/ui/button";
-import debounce from 'lodash.debounce';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, MinusIcon,PlusIcon } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
-type Product = {
-    id: number;
-    name: string;
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
-    price: number;
+type CartItem = Product & {
+    quantity: number;
 };
 
 const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
     const [isModalOpen, setIsModalOpen] = useState(true);
-    const [clients, setClients] = useState<Client[]>([]);
-    const [filteredClients, setFilteredClients] = useState<Client[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [selectedClient, setSelectedClient] = useState<number | null>(purchase.clientId);
-    const [cart, setCart] = useState<{ productId: number; quantity: number }[]>(purchase.products.map(p => ({ productId: p.id, quantity: p.quantity })));
-    const [clientSearchTerm, setClientSearchTerm] = useState('');
+    const [cart, setCart] = useState<CartItem[]>(purchase.products.map(p => ({
+        ...p.product,
+        quantity: p.quantity
+    })));
     const [productSearchTerm, setProductSearchTerm] = useState('');
+    const { toast } = useToast();
 
     useEffect(() => {
         async function loadInitialData() {
-            await loadClients();
             await loadProducts();
         }
 
         loadInitialData();
     }, []);
-
-    const loadClients = async () => {
-        const response = await fetchUsers();
-        if (response.ok) {
-            const data = await response.json();
-            if (Array.isArray(data.clients) && data.clients !== null) {
-                setClients(data.clients as Client[]);
-                setFilteredClients(data.clients as Client[]);
-            }
-        } else {
-            console.error('Error fetching clients:', response);
-        }
-    };
 
     const loadProducts = async () => {
         const response = await fetchProducts();
@@ -76,58 +46,56 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
         }
     };
 
-    const addToCart = (productId: number, quantity: number) => {
-        setCart([...cart, { productId, quantity }]);
+    const addToCart = (product: Product) => {
+        setCart(prevCart => {
+            const existingItem = prevCart.find(item => item.id === product.id);
+            if (existingItem) {
+                return prevCart.map(item => 
+                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                );
+            }
+            return [...prevCart, { ...product, quantity: 1 }];
+        });
     };
 
-    const removeFromCart = (productId: number) => {
-        setCart(cart.filter(item => item.productId !== productId));
-    };
-
-    const updateCartQuantity = (productId: number, quantity: number) => {
-        setCart(cart.map(item => item.productId === productId ? { ...item, quantity } : item));
+    const updateQuantity = (id: number, quantity: number) => {
+        setCart(prevCart => 
+            prevCart.map(item => 
+                item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
+            ).filter(item => item.quantity > 0)
+        );
     };
 
     const handleSubmit = async () => {
-        if (selectedClient && cart.length > 0) {
+        if (cart.length > 0) {
             const purchaseData = {
                 id: purchase.id,
-                clientId: selectedClient,
-                products: cart,
+                products: cart.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity
+                })),
             };
 
             try {
                 await updatePurchase(purchaseData);
-                alert('Compra atualizada com sucesso!');
-                setIsModalOpen(false);
+                toast({
+                    title: "Success",
+                    description: "Compra atualizada com sucesso!",
+                });
+                window.location.reload();
             } catch (error) {
                 console.error('Erro ao atualizar compra', error);
+                toast({
+                    title: "Error",
+                    description: "Erro ao atualizar compra",
+                    variant: "destructive"
+                });
             }
         } else {
-            alert('Selecione um cliente e adicione produtos ao carrinho.');
-        }
-    };
-
-    // Declare the search handlers before using them
-    const handleClientSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const searchTerm = e.target.value.toLowerCase();
-        setClientSearchTerm(searchTerm);
-        if (searchTerm) {
-            const response = await searchUsers(searchTerm);
-            if (response.ok) {
-                const data = await response.json();
-                if (Array.isArray(data.clients)) {
-                    setFilteredClients(data.clients as Client[]);
-                } else {
-                    console.error('Unexpected data format for clients:', data);
-                    setFilteredClients([]);
-                }
-            } else {
-                console.error('Error searching clients:', response);
-                setFilteredClients([]);
-            }
-        } else {
-            setFilteredClients(clients);
+            toast({
+                title: "Warning",
+                description: "Adicione produtos ao carrinho.",
+            });
         }
     };
 
@@ -153,125 +121,72 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
         }
     };
 
-    // Debounce the search functions
-    const debouncedClientSearch = useDebouncedSearch(handleClientSearch, 300);
-    const debouncedProductSearch = useDebouncedSearch(handleProductSearch, 300);
-
-    const Combobox = ({ items, selectedValue, onSelect, placeholder, onSearch }: { items: any[], selectedValue: any, onSelect: (value: any) => void, placeholder: string, onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
-        const [open, setOpen] = useState(false);
-        const [value, setValue] = useState(selectedValue);
-
-        return (
-            <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        className="w-full justify-between"
-                    >
-                        {value
-                            ? items.find(item => item.id === value)?.name
-                            : placeholder}
-                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                    <Command>
-                        <CommandInput
-                            placeholder={`Search ${placeholder.toLowerCase()}...`}
-                            className="h-9"
-                        />
-                        <CommandList>
-                            <CommandEmpty>No {placeholder.toLowerCase()} found.</CommandEmpty>
-                            <CommandGroup>
-                                {items.map(item => (
-                                    <CommandItem
-                                        key={item.id}
-                                        value={item.id}
-                                        onSelect={(currentValue) => {
-                                            const newValue = currentValue === value ? null : currentValue;
-                                            setValue(newValue);
-                                            onSelect(newValue);
-                                            setOpen(false);
-                                        }}
-                                    >
-                                        {item.name}
-                                        <CheckIcon
-                                            className={
-                                                "ml-auto h-4 w-4"
-                                            }
-                                        />
-                                    </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        </CommandList>
-                    </Command>
-                </PopoverContent>
-            </Popover>
-        );
-    };
-
     if (!isModalOpen) return null;
 
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
     return (
-        <div className="modal fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
+        <div className='modal fixed inset-0 rounded-lg bg-[#222527]/95 border-transparent border-0 flex items-center justify-center z-50'>
             <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-[1000px]">
-                <h2 className="text-xl font-bold mb-4 text-orange-500">Atualizar Compra</h2>
-                <div className='grid grid-cols-2 gap-8'>
+                <Card className="w-full max-w-4xl mx-auto bg-[#222527] border-transparent border-0 rounded-lg">
+            <CardHeader>
+                        <CardTitle className="text-4xl font-semibold text-orange-500">Atualizar Compra</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-6 ">
+                <div className="space-y-4">
                     <div>
-                        <div className='flex flex-col gap-2'>
-                            <h3 className='text-gray-400 font-bold text-xl'>Cliente</h3>
-                            <Combobox
-                                items={filteredClients}
-                                selectedValue={selectedClient}
-                                onSelect={setSelectedClient}
-                                placeholder="Select client"
-                                onSearch={debouncedClientSearch}
-                            />
-                        </div>
-
-                        <div className='mt-4 flex flex-col gap-2 mb-4'>
-                            <h3 className='text-gray-400 font-bold text-xl'>Pesquisar produto</h3>
-                            <Combobox
-                                items={filteredProducts}
-                                selectedValue={null}
-                                onSelect={(productId) => productId && addToCart(productId, 1)}
-                                placeholder="Select product"
-                                onSearch={debouncedProductSearch}
-                            />
-                        </div>
+                                <Label className="text-2xl font-semibold text-orange-500">Pesquisar produto</Label>
+                        <Input 
+                            id="product-search" 
+                            placeholder="Pesquisar produto" 
+                                    className='bg-[#272b2f] border-transparent border-0 rounded-lg p-4'
+                            value={productSearchTerm}
+                            onChange={handleProductSearch}
+                        />
                     </div>
-
-                    <div>
-                        <h3 className='text-gray-400 font-bold text-xl'>Carrinho</h3>
-                        <div className='h-[700px] overflow-y-auto bg-[#222527] rounded-md p-4 flex flex-col gap-4'>
-                            {cart.map((item, index) => {
-                                const product = products.find((p) => p.id === item.productId);
-                                return (
-                                    <div key={index} className='flex justify-between items-center bg-orange-500/20 rounded-md p-2'>
-                                        <span>{product?.name}</span>
-                                        <div className='flex items-center gap-2'>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                max="99"
-                                                value={item.quantity}
-                                                onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
-                                                className='text-white bg-[#222527] border-transparent border-0 rounded-md p-2 w-[50px]'
-                                            />
-                                            <button className='text-red-500 text-sm' onClick={() => removeFromCart(item.productId)}><TrashIcon /></button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                            <ScrollArea className="h-[440px] border-transparent border-0 rounded-lg rounded-md p-4 overflow-auto bg-[#272b2f] text-sm">
+                        {filteredProducts.map(product => (
+                            <div key={product.id} className="flex flex-col">
+                                <div className="flex justify-between items-center py-2">
+                                    <span className='text-white border-transparent border-0 rounded-lg'>{product.name} - R$ {product.price.toFixed(2)}</span>
+                                    <a className='cursor-pointer' onClick={() => addToCart(product)}><PlusCircle size={20} className='text-green-500 hover:text-green-600' /></a>
+                                </div>
+                                <hr className="my-2 border-t border-gray-600 w-full" />
+                            </div>
+                        ))}
+                    </ScrollArea>
                 </div>
-                <button className='bg-orange-500 text-white p-4 rounded-md' onClick={handleSubmit}>Atualizar Compra</button>
-                <button className='bg-red-500 text-white p-4 rounded-md ml-4' onClick={() => setIsModalOpen(false)}>Fechar</button>
-            </div>
-        </div>
+                <div>
+                    <h3 className="text-2xl font-semibold text-orange-500">Carrinho</h3>
+                    <ScrollArea className="h-[440px] rounded-md p-4 overflow-auto bg-[#272b2f] text-sm border-transparent border-0 rounded-lg">
+                        {cart.map(item => (
+                            <div key={item.id} className="flex justify-between items-center py-2">
+                                <span>{item.name} - R$ {item.price.toFixed(2)}</span>
+                                <div className="flex items-center">
+                                    <a className='cursor-pointer' onClick={() => updateQuantity(item.id, item.quantity - 1)}><MinusIcon size={10} className='text-red-500 hover:text-red-600' /></a>
+
+                                    <Input 
+                                        type="number" 
+                                        value={item.quantity} 
+                                        onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+                                        className="w-16 mx-2 text-center bg-[#222527] border-transparent border-0 rounded-lg p-2"
+                                    />
+                                    <a className='cursor-pointer' onClick={() => updateQuantity(item.id, item.quantity + 1)}><PlusIcon size={10} className='text-green-500 hover:text-green-600' /></a>
+
+                                </div>
+                            </div>
+                        ))}
+                    </ScrollArea>
+                </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+                        <div className="text-xl font-bold">Total:  <span className='text-green-500'>R$ {total.toFixed(2)}</span></div>
+                <div>
+                            <Button className="mr-2 bg-green-500 hover:bg-green-600 p-4" onClick={handleSubmit}>Atualizar Compra</Button>
+                    <Button className='bg-red-500 hover:bg-red-600 p-4' onClick={() => setIsModalOpen(false)}>Fechar</Button>
+                </div>
+            </CardFooter>
+                </Card></div></div>
     );
 };
 

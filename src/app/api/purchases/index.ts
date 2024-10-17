@@ -15,7 +15,6 @@ const zCreatePurchase = z.object({
 });
 const zUpdatePurchase = z.object({
     id: z.number(),
-    clientId: z.number(),
     products: z.array(
         z.object({
             productId: z.number(),
@@ -23,7 +22,6 @@ const zUpdatePurchase = z.object({
         })
     )
 });
-
 const zDeletePurchase = z.object({
     purchaseId: z.number()
 });
@@ -119,25 +117,41 @@ const purchaseApp = new Hono()
         try {
             const purchase = await prisma.purchaseRecord.findUnique({
                 where: { id: body.id, deleted_at: null },
+                include: {
+                    products: true,
+                },
             });
 
             if (!purchase) {
                 return c.json({ error: 'Purchase not found' }, 404);
             }
 
-            await prisma.purchaseRecord.deleteMany({
-                where: { id: body.id },
+            const updatedProducts = body.products.map((p: { productId: number, quantity: number }) => {
+                const existingProduct = purchase.products.find(prod => prod.productId === p.productId);
+                if (existingProduct) {
+                    if (existingProduct.quantity !== p.quantity) {
+                        return {
+                            where: { id: existingProduct.id },
+                            data: { quantity: p.quantity },
+                        };
+                    }
+                    return null;
+                } else {
+                    return {
+                        create: {
+                            productId: p.productId,
+                            quantity: p.quantity,
+                        },
+                    };
+                }
             });
 
             const updatedPurchase = await prisma.purchaseRecord.update({
                 where: { id: body.id },
                 data: {
-                    clientId: body.clientId,
                     products: {
-                        create: body.products.map((p: { productId: number, quantity: number }) => ({
-                            productId: p.productId,
-                            quantity: p.quantity,
-                        })),
+                        updateMany: updatedProducts.filter(p => p && p.where),
+                        create: updatedProducts.filter(p => p && p.create).map(p => p.create),
                     },
                 },
                 include: {
