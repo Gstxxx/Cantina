@@ -126,40 +126,54 @@ const purchaseApp = new Hono()
                 return c.json({ error: 'Purchase not found' }, 404);
             }
 
-            const updatedProducts = body.products.map((p: { productId: number, quantity: number }) => {
+            // Define the type for update operations
+            type UpdateOperation = {
+                where: { id: number };
+                data: { quantity: number };
+            };
+
+            const updateOperations: UpdateOperation[] = [];
+            const createOperations: { productId: number, quantity: number }[] = [];
+
+            body.products.forEach((p: { productId: number, quantity: number }) => {
                 const existingProduct = purchase.products.find(prod => prod.productId === p.productId);
+
                 if (existingProduct) {
                     if (existingProduct.quantity !== p.quantity) {
-                        return {
+                        updateOperations.push({
                             where: { id: existingProduct.id },
                             data: { quantity: p.quantity },
-                        };
+                        });
                     }
-                    return null;
                 } else {
-                    return {
-                        create: {
-                            productId: p.productId,
-                            quantity: p.quantity,
-                        },
-                    };
+                    createOperations.push({
+                        productId: p.productId,
+                        quantity: p.quantity,
+                    });
                 }
             });
 
-            const updatedPurchase = await prisma.purchaseRecord.update({
-                where: { id: body.id },
-                data: {
-                    products: {
-                        updateMany: updatedProducts.filter(p => p && p.where),
-                        create: updatedProducts.filter(p => p && p.create).map(p => p.create),
-                    },
-                },
-                include: {
-                    products: true,
-                },
-            });
+            // Perform updates
+            for (const updateOp of updateOperations) {
+                await prisma.productPurchase.update({
+                    where: updateOp.where,
+                    data: updateOp.data,
+                });
+            }
 
-            return c.json(updatedPurchase, 200);
+            // Perform creates
+            if (createOperations.length > 0) {
+                await prisma.purchaseRecord.update({
+                    where: { id: body.id },
+                    data: {
+                        products: {
+                            create: createOperations,
+                        },
+                    },
+                });
+            }
+
+            return c.json({ message: 'Purchase updated successfully' }, 200);
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to update purchase' }, 500);
