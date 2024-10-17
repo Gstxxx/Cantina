@@ -16,7 +16,7 @@ import { submit as submitDeleteUser } from './delete';
 import { submit as submitUpdateUser } from './update';
 import { submit as submitGeneratePDF } from './generatePdf';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-
+import { submit as searchUsers } from './search';
 export async function action(formData: FormData) {
     const intent = formData.get("intent");
 
@@ -191,8 +191,12 @@ export default function ListUsers() {
     };
 
     useEffect(() => {
-        fetchUsersData(currentPage);
-    }, [currentPage]);
+        if (searchTerm) {
+            fetchSearchedUsersData(searchTerm);
+        } else {
+            fetchUsersData(currentPage);
+        }
+    }, [currentPage, searchTerm]);
 
     const handleEditUser = (user: Client) => {
         setEditingUser(user);
@@ -248,6 +252,36 @@ export default function ListUsers() {
         window.scrollTo(0, 0);
     };
 
+    const fetchSearchedUsersData = async (search: string) => {
+        try {
+            const response = await searchUsers(search); // Use the search API
+
+            if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data.clients) && data.clients !== null) {
+                    const clientsWithPurchases = data.clients.map(client => ({
+                        ...client,
+                        purchases: client.purchases || []
+                    }));
+                    setUsers(clientsWithPurchases as Client[]);
+                    setTotalPages(1); // Default to 1 page for search results
+                    setTotalCount(clientsWithPurchases.length); // Total count is the length of the search results
+                } else {
+                    setError("No clients found.");
+                }
+            } else {
+                const errorData = await response.json();
+                setError('error' in errorData ? errorData.error : "Failed to fetch users from the server.");
+            }
+        } catch (error) {
+            setError(`An error occurred while fetching the users: ${error}`);
+        }
+    };
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
     return (
         <div className='rounded-lg bg-[#272b2f] border-transparent border-0'>
             <Card className='border-transparent border-0'>
@@ -262,7 +296,7 @@ export default function ListUsers() {
                         <Input
                             placeholder="Procurar clientes..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={handleSearchChange}
                             className="max-w-sm bg-[#222527] border-transparent border-0 p-4 active:border-orange-500"
                         />
                     </div>

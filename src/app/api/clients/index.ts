@@ -21,6 +21,10 @@ const zPaginateSchema = z.object({
     page: z.string(),
 });
 
+const zSearchSchema = z.object({
+    query: z.string(),
+});
+
 const clientApp = new Hono()
     .use(userMiddleware)
     .use(adminMiddleware)
@@ -173,6 +177,36 @@ const clientApp = new Hono()
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to remove deletion' }, 500);
+        }
+    })
+    .get("/search", zValidator("query", zSearchSchema), async (c) => {
+        try {
+            const query = c.req.query("query");
+            if (!query) {
+                return c.json({ error: "Query is required" }, 400);
+            }
+
+            const clients = await prisma.client.findMany({
+                where: {
+                    OR: [
+                        { name: { contains: query } },
+                        { phone: { contains: query } },
+                    ],
+                    deleted_at: null,
+                },
+                include: {
+                    purchases: true,
+                },
+            });
+
+            if (!clients || clients.length === 0) {
+                return c.json({ error: "No Clients found" }, 404);
+            }
+
+            return c.json({ clients: clients }, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to search clients' }, 500);
         }
     });
 export { clientApp };

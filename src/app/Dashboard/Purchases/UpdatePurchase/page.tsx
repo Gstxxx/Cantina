@@ -1,10 +1,27 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { submit as updatePurchase } from './update';
-import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fetch';
-import { submit as fetchUsers } from 'app/Dashboard/Clients/ListClients/fetch';
+import { submit as fetchProducts } from '../../products/ListProducts/fetch';
+import { submit as fetchUsers } from '../../clients/ListClients/fetch';
+import { submit as searchUsers } from '../../clients/ListClients/search';
+import { submit as searchProducts } from '../../products/ListProducts/search';
 import { PurchaseRecord, Client } from 'app/types';
-import { TrashIcon } from "@radix-ui/react-icons";
+import { TrashIcon, CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import debounce from 'lodash.debounce';
 
 type Product = {
     id: number;
@@ -91,20 +108,108 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
         }
     };
 
-    const handleClientSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Declare the search handlers before using them
+    const handleClientSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = e.target.value.toLowerCase();
         setClientSearchTerm(searchTerm);
-        setFilteredClients(clients.filter(client => client.name.toLowerCase().includes(searchTerm)));
+        if (searchTerm) {
+            const response = await searchUsers(searchTerm);
+            if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data.clients)) {
+                    setFilteredClients(data.clients as Client[]);
+                } else {
+                    console.error('Unexpected data format for clients:', data);
+                    setFilteredClients([]);
+                }
+            } else {
+                console.error('Error searching clients:', response);
+                setFilteredClients([]);
+            }
+        } else {
+            setFilteredClients(clients);
+        }
     };
 
-    const handleProductSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleProductSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = e.target.value.toLowerCase();
         setProductSearchTerm(searchTerm);
-        setFilteredProducts(products.filter(product =>
-            (product.name.toLowerCase().includes(searchTerm) ||
-                product.id.toString().includes(searchTerm)) &&
-            product.deleted_at === null
-        ));
+        if (searchTerm) {
+            const response = await searchProducts(searchTerm);
+            if (response.ok) {
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    setFilteredProducts(data as Product[]);
+                } else {
+                    console.error('Unexpected data format for products:', data);
+                    setFilteredProducts([]);
+                }
+            } else {
+                console.error('Error searching products:', response);
+                setFilteredProducts([]);
+            }
+        } else {
+            setFilteredProducts(products);
+        }
+    };
+
+    // Debounce the search functions
+    const debouncedClientSearch = useDebouncedSearch(handleClientSearch, 300);
+    const debouncedProductSearch = useDebouncedSearch(handleProductSearch, 300);
+
+    const Combobox = ({ items, selectedValue, onSelect, placeholder, onSearch }: { items: any[], selectedValue: any, onSelect: (value: any) => void, placeholder: string, onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void }) => {
+        const [open, setOpen] = useState(false);
+        const [value, setValue] = useState(selectedValue);
+
+        return (
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full justify-between"
+                    >
+                        {value
+                            ? items.find(item => item.id === value)?.name
+                            : placeholder}
+                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                    <Command>
+                        <CommandInput
+                            placeholder={`Search ${placeholder.toLowerCase()}...`}
+                            className="h-9"
+                        />
+                        <CommandList>
+                            <CommandEmpty>No {placeholder.toLowerCase()} found.</CommandEmpty>
+                            <CommandGroup>
+                                {items.map(item => (
+                                    <CommandItem
+                                        key={item.id}
+                                        value={item.id}
+                                        onSelect={(currentValue) => {
+                                            const newValue = currentValue === value ? null : currentValue;
+                                            setValue(newValue);
+                                            onSelect(newValue);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        {item.name}
+                                        <CheckIcon
+                                            className={
+                                                "ml-auto h-4 w-4"
+                                            }
+                                        />
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        );
     };
 
     if (!isModalOpen) return null;
@@ -117,46 +222,24 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
                     <div>
                         <div className='flex flex-col gap-2'>
                             <h3 className='text-gray-400 font-bold text-xl'>Cliente</h3>
-                            <input
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                                value={clientSearchTerm}
-                                onChange={handleClientSearch}
-                                placeholder="Pesquisar cliente"
+                            <Combobox
+                                items={filteredClients}
+                                selectedValue={selectedClient}
+                                onSelect={setSelectedClient}
+                                placeholder="Select client"
+                                onSearch={debouncedClientSearch}
                             />
-                            <select
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                                value={selectedClient || ''}
-                                onChange={(e) => setSelectedClient(Number(e.target.value))}
-                            >
-                                <option className='text-white hover:bg-orange-500' value="" disabled>Selecione um cliente</option>
-                                {filteredClients.map((client) => (
-                                    <option key={client.id} value={client.id}>
-                                        {client.name}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
 
                         <div className='mt-4 flex flex-col gap-2 mb-4'>
                             <h3 className='text-gray-400 font-bold text-xl'>Pesquisar produto</h3>
-                            <input
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
-                                value={productSearchTerm}
-                                onChange={handleProductSearch}
-                                placeholder="Pesquisar produto"
+                            <Combobox
+                                items={filteredProducts}
+                                selectedValue={null}
+                                onSelect={(productId) => productId && addToCart(productId, 1)}
+                                placeholder="Select product"
+                                onSearch={debouncedProductSearch}
                             />
-                            <select multiple className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md mb-4 h-[300px] overflow-y-auto' onChange={(e) => {
-                                const selectedOptions = Array.from(e.target.options)
-                                    .filter(option => option.selected)
-                                    .map(option => option.value);
-                                selectedOptions.forEach(id => addToCart(Number(id), 1));
-                            }}>
-                                {filteredProducts.map((product) => (
-                                    <option className='text-white hover:bg-orange-500 text-bold' key={product.id} value={product.id}>
-                                        {product.name} - R$ {(product.price / 100).toFixed(2)}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
                     </div>
 

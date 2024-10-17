@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../../../lib/prisma';
 import { adminMiddleware, userMiddleware } from '../middlewere/authmiddlewere';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 const zCreatePurchase = z.object({
     clientId: z.number(),
@@ -43,6 +42,10 @@ const zGeneratePDF = z.object({
     clientId: z.number(),
     start: z.string(),
     end: z.string()
+});
+
+const zSearchQuery = z.object({
+    query: z.string(),
 });
 
 const purchaseApp = new Hono()
@@ -302,6 +305,48 @@ const purchaseApp = new Hono()
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to generate PDF' }, 500);
+        }
+    })
+    .get('/search', zValidator('query', zSearchQuery), async (c) => {
+        const { query } = c.req.valid('query');
+        if (!query) {
+            return c.json({ error: "Query is required" }, 400);
+        }
+        try {
+            const purchases = await prisma.purchaseRecord.findMany({
+                where: {
+                    deleted_at: null,
+                    OR: [
+                        { clientId: Number(query) },
+                        {
+                            products: {
+                                some: {
+                                    product: {
+                                        name: query,
+                                    },
+                                },
+                            }
+                        },
+                    ],
+                },
+                include: {
+                    client: true,
+                    products: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+
+            if (!purchases || purchases.length === 0) {
+                return c.json({ error: 'No purchases found matching the query' }, 404);
+            }
+
+            return c.json(purchases, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to search purchases' }, 500);
         }
     });
 

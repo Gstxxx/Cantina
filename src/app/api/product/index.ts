@@ -26,6 +26,10 @@ const zPaginateSchema = z.object({
     page: z.string(),
 });
 
+const zSearchSchema = z.object({
+    query: z.string(),
+});
+
 const productApp = new Hono()
     .basePath("/product")
     .use(userMiddleware)
@@ -176,6 +180,31 @@ const productApp = new Hono()
         } catch (error) {
             console.error(error);
             return c.json({ error: 'Unable to get product info' }, 500);
+        }
+    })
+    .get("/search", zValidator("query", zSearchSchema), async (c) => {
+        try {
+            const body = c.req.query("query");
+            if (!body) {
+                return c.json({ error: "Query is required" }, 400);
+            }
+
+            const products = await prisma.product.findMany({
+                where: {
+                    name: {
+                        contains: body,
+                    },
+                },
+            });
+
+            if (!products || products.length === 0) {
+                return c.json({ error: "No products found" }, 404);
+            }
+
+            return c.json(products, 200);
+        } catch (error) {
+            console.error(error);
+            return c.json({ error: 'Unable to search products' }, 500);
         }
     });
 export { productApp };

@@ -32,6 +32,8 @@ export async function action(formData: FormData) {
 export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord[] }) {
     const [error, setError] = useState<string | null>(null);
     const [editingPurchase, setEditingPurchase] = useState<PurchaseRecord | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filteredPurchases, setFilteredPurchases] = useState<PurchaseRecord[]>(purchasesData);
 
     const handleEdit = (purchase: PurchaseRecord) => {
         setEditingPurchase(purchase);
@@ -50,8 +52,30 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
         }
     };
 
+    const handleSearch = async (query: string) => {
+        setSearchQuery(query);
+        try {
+            const response = await fetch(`/api/purchases/search?query=${query}`);
+            if (response.ok) {
+                const data: PurchaseRecord[] = await response.json();
+                setFilteredPurchases(data);
+            } else {
+                setError('Failed to fetch search results.');
+            }
+        } catch (error) {
+            setError('An error occurred while searching.');
+        }
+    };
+
     return (
         <div>
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search purchases..."
+                className="mb-4 p-2 border rounded"
+            />
             <Table className='max-h-screen overflow-auto h-[500px]'>
                 <TableHeader>
                     <TableRow className='bg-[#222527]/50 border-transparent border-0 p-4 rounded-lg py-8'>
@@ -64,7 +88,7 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
                     </TableRow>
                 </TableHeader>
                 <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
-                    {purchasesData.map((purchase) => (
+                    {filteredPurchases.map((purchase) => (
                         <TableRow key={purchase.id}>
                             <TableCell>{purchase.id}</TableCell>
                             <TableCell>{new Date(purchase.purchaseDate).toLocaleString()}</TableCell>
