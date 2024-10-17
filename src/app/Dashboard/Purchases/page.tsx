@@ -7,15 +7,21 @@ import { PurchaseRecord } from 'app/types'
 import { Card } from '@/components/card/card'
 import { ListPurchases } from "./ListPurchase/ListPurchase"
 import * as React from "react"
-import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon } from "@radix-ui/react-icons"
-import { format } from "date-fns"
 import PurchaseModal from './CreatePurchase/page'
 import { submit } from './ListPurchase/fetchPaginate';
 import { submit as fetchData } from './ListPurchase/fetch'
 import { Card as UICard, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DateRangePicker } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+
+type DateRange = {
+    selection: {
+        startDate: Date;
+        endDate: Date;
+    };
+};
 
 const PurchaseAnalysis = () => {
     const currentDate = new Date();
@@ -141,49 +147,21 @@ const PurchaseAnalysis = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10); // Get top 10 buyers
 
+    const handleSelect = (ranges: DateRange) => {
+        setStartDate(ranges.selection.startDate);
+        setEndDate(ranges.selection.endDate);
+    };
+
+    const selectionRange = {
+        startDate: startDate,
+        endDate: endDate,
+        key: 'selection',
+    };
+
     return (
         <div className="p-4 space-y-4 text-white ">
             <h1 className="text-3xl font-bold mb-4 text-white">Análise de Compras de <span className='text-orange-500 font-bold text-xl'>{startDate?.toISOString().split('T')[0]}</span> a <span className='text-orange-500 font-bold text-xl'>{endDate?.toISOString().split('T')[0]}</span></h1>
-            <div className="flex space-x-4">
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant={"outline"} className="rounded-md bg-[#272b2f] text-white p-2 border-transparent border-0">
-                            <p className='text-orange-500 font-bold text-medium'>Data Inicio</p>
-                            {startDate ? format(startDate, "PPP") : "Data Inicio"}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-2 justify-center bg-[#1f2225] border-transparent border-0" align="start">
-                        <p className='text-orange-500 font-bold text-medium'>Data Inicio</p>
-                        <Calendar
-                            mode="single"
-                            selected={startDate}
-                            onSelect={setStartDate}
-                            className="rounded-md border-transparent border-0 bg-[#272b2f] mt-4 p-4 text-white"
-                        />
-                    </PopoverContent>
-                </Popover>
 
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant={"outline"} className="rounded-md bg-[#272b2f] text-white p-2 border-transparent border-0">
-                            <p className='text-orange-500 font-bold text-medium'>Data Fim</p>
-                            {endDate ? format(endDate, "PPP") : "Data Fim"}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-2 justify-center bg-[#1f2225] border-transparent border-0" align="start">
-                        <p className='text-orange-500 font-bold text-medium'>Data Fim</p>
-                        <Calendar
-                            mode="single"
-                            selected={endDate}
-                            onSelect={setEndDate}
-                            className="rounded-md border-transparent border-0 bg-[#272b2f] mt-4 p-4 text-white"
-                        />
-                    </PopoverContent>
-                </Popover>
-                <Button className='bg-orange-500 text-white p-4 rounded-md' onClick={toggleModal}>Criar Nova Compra</Button>
-            </div>
             {isModalOpen && <PurchaseModal />}
             {totalPurchases > 0 && (
                 <div>
@@ -195,6 +173,13 @@ const PurchaseAnalysis = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
                         <div className='flex flex-col gap-4'>
+
+                            <Button className='bg-orange-500 text-white p-4 rounded-md' onClick={toggleModal}>Criar Nova Compra</Button>
+                            <DateRangePicker
+                                ranges={[selectionRange]}
+                                onChange={handleSelect}
+                                className="rounded-md border-transparent border-0 bg-[#272b2f] mt-4 p-4 text-black"
+                            />
                             <Graphic title="Top 5 produtos vendidos" values={productSalesData} />
                             <TopBuyersChart title="Top 10 compradores" values={topBuyersData} />
                         </div>
