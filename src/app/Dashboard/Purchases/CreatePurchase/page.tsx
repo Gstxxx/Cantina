@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { submit as createPurchase } from './Create';
 import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fetch';
