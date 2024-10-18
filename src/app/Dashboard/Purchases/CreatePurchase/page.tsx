@@ -129,21 +129,21 @@ const PurchaseModal = () => {
     if (!isModalOpen) return null;
 
     return (
-        <div className="modal fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
-            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-[1000px]">
+        <div className="modal fixed inset-0 rounded-lg bg-gray-100/50 border-transparent border-0 flex items-center justify-center z-50">
+            <div className="rounded-lg bg-white border-transparent border-0 p-6 shadow-md w-[1000px]">
                 <h2 className="text-xl font-bold mb-4 text-orange-500">Criar Compra</h2>
                 <div className='grid grid-cols-2 gap-8'>
                     <div >
                         <div className='flex flex-col gap-2'>
                             <h3 className='text-gray-400 font-bold text-xl'>Cliente</h3>
                             <input
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                className='bg-gray-100 w-full p-2 border-none rounded-md text-orange-400'
                                 value={clientSearchTerm}
                                 onChange={handleClientSearch}
                                 placeholder="Pesquisar cliente"
                             />
                             <select
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                className='bg-gray-100 text-gray-400 w-full p-2 border-transparent border-0 rounded-md'
                                 value={selectedClient || ''}
                                 onChange={(e) => setSelectedClient(Number(e.target.value))}
                             >
@@ -154,40 +154,38 @@ const PurchaseModal = () => {
                                     </option>
                                 ))}
                             </select>
-                            <button className='bg-green-500 text-white p-2 rounded-md mt-2' onClick={loadMoreClients}>Carregar Mais Clientes</button>
                         </div>
 
                         <div className='mt-4 flex flex-col gap-2 mb-4'>
                             <h3 className='text-gray-400 font-bold text-xl'>Pesquisar produto</h3>
                             <input
-                                className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md'
+                                className='bg-gray-100 text-gray-400 w-full p-2 border-transparent border-0 rounded-md'
                                 value={productSearchTerm}
                                 onChange={handleProductSearch}
                                 placeholder="Pesquisar produto"
                             />
-                            <select multiple className='bg-[#222527] w-full p-2 border-transparent border-0 rounded-md mb-4 h-[300px] overflow-y-auto' onChange={(e) => {
+                            <select multiple className='bg-gray-100 text-gray-400 w-full p-2 border-transparent border-0 rounded-md mb-4 h-[300px] overflow-y-auto' onChange={(e) => {
                                 const selectedOptions = Array.from(e.target.options)
                                     .filter(option => option.selected)
                                     .map(option => option.value);
                                 selectedOptions.forEach(id => addToCart(Number(id), 1));
                             }}>
                                 {filteredProducts.map((product) => (
-                                    <option className='text-white hover:bg-orange-500 text-bold' key={product.id} value={product.id}>
+                                    <option className='text-gray-400 hover:bg-orange-500 text-bold' key={product.id} value={product.id}>
                                         {product.name} - R$ {(product.price / 100).toFixed(2)}
                                     </option>
                                 ))}
                             </select>
-                            <button className='bg-green-500 text-white p-2 rounded-md' onClick={loadMoreProducts}>Carregar Mais Produtos</button>
                         </div>
                     </div>
 
                     <div >
                         <h3 className='text-gray-400 font-bold text-xl'>Carrinho</h3>
-                        <div className='h-[700px] overflow-y-auto bg-[#222527] rounded-md p-4 flex flex-col gap-4'>
+                        <div className='h-[700px] overflow-y-auto bg-gray-100 text-gray-400 rounded-md p-4 flex flex-col gap-4'>
                             {cart.map((item, index) => {
                                 const product = products.find((p) => p.id === item.productId);
                                 return (
-                                    <div key={index} className='flex justify-between items-center bg-orange-500/20 rounded-md p-2'>
+                                    <div key={index} className='flex justify-between items-center bg-gray-600 rounded-md p-2'>
                                         <span>{product?.name}</span>
                                         <div className='flex items-center gap-2'>
                                             <input
@@ -196,7 +194,7 @@ const PurchaseModal = () => {
                                                 max="99"
                                                 value={item.quantity}
                                                 onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
-                                                className='text-white bg-[#222527] border-transparent border-0 rounded-md p-2 w-[50px]'
+                                                className=' bg-gray-100 text-gray-400 border-transparent border-0 rounded-md p-2 w-[50px]'
                                             />
                                             <button className='text-red-500 text-sm' onClick={() => removeFromCart(item.productId)}><TrashIcon /></button>
                                         </div>

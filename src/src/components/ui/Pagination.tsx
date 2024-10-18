@@ -39,7 +39,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   return (
     <nav className="flex items-center justify-center space-x-2 mt-2" aria-label="Pagination">
       <Button
-        className={currentPage === 1 ? 'text-gray-600 p-2' : 'text-orange-600'}
+        className={`text-orange-500 ${currentPage === 1 ? 'text-gray-600 p-2' : ''}`}
         size="icon"
         disabled={currentPage === 1}
         aria-label="Go to previous page"
@@ -49,11 +49,11 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
       </Button>
       {getPageNumbers().map((page, index) => (
         page === '...' ? (
-          <span key={index} className="px-2 text-black">...</span>
+          <span key={index} className="px-2 text-gray-500">...</span>
         ) : (
           <Button
-            key={index}
-              className={currentPage === page ? 'bg-orange-500 text-bold p-2' : 'bg-gray-100 p-2 text-black ' }
+              key={index}
+              className={`bg-gray-100 p-2 text-gray-500 ${currentPage === page ? 'bg-orange-500 text-bold p-2' : ''}`}
             size="icon"
             aria-label={`Go to page ${page}`}
             aria-current={currentPage === page ? "page" : undefined}
@@ -64,7 +64,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         )
       ))}
       <Button
-        className={currentPage === totalPages ? 'text-orange-500 p-2' : 'text-orange-600'}
+        className={`text-orange-500 ${currentPage === totalPages ? 'text-gray-600 p-2' : '' }`}
         size="icon"
         disabled={currentPage === totalPages}
         aria-label="Go to next page"

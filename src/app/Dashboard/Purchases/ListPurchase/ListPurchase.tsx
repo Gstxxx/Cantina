@@ -75,19 +75,19 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
             />
             <ScrollArea className='max-h-screen overflow-auto h-[400px]'>
                 <Table>
-                    <TableHeader>
+                    <TableHeader className='border'>
                         <TableRow>
-                            <TableHead className="w-[200px]">ID</TableHead>
-                            <TableHead className="w-[200px]">Data</TableHead>
-                            <TableHead className="w-[200px]">Cliente</TableHead>
-                            <TableHead className="w-[200px]">Produtos</TableHead>
-                            <TableHead className="w-[200px]">Total</TableHead>
-                            <TableHead className="w-[200px]">Actions</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">ID</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">Data</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">Cliente</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">Produtos</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">Total</TableHead>
+                            <TableHead className="w-[200px] text-gray-500">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className='border'>
                         {filteredPurchases.map((purchase) => (
-                            <TableRow className='font-medium text-gray-500 bg-gray-100 border' key={purchase.id}>
+                            <TableRow className='font-medium text-gray-400 bg-gray-100 border' key={purchase.id}>
                                 <TableCell>{purchase.id}</TableCell>
                                 <TableCell>{new Date(purchase.purchaseDate).toLocaleString()}</TableCell>
                                 <TableCell>{purchase.client.name}</TableCell>
