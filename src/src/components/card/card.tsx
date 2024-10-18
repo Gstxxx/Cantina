@@ -1,13 +1,23 @@
 import React from 'react'
-import { Card as UiCard, CardContent, CardTitle } from "@/components/ui/card"
+
+import {
+    Card as CardUI,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+
 
 export function Card({ title, value }: { title: string, value: string | number }) {
     return (
-        <UiCard className='rounded-lg bg-[#272b2f] border-transparent border-0 h-max-[350px]'>
-            <CardContent>
-                <CardTitle className="text-[#2c2c2c] text-xl font-bold">{title}</CardTitle>
-                <h2 className="text-orange-500 text-m font-bold">{value}</h2>
-            </CardContent>
-        </UiCard>
+        <CardUI 
+          className="bg-white shadow-md rounded-lg lg:max-w-md" x-chunk="charts-01-chunk-0">
+            <CardHeader className="space-y-0 pb-2">
+                <CardDescription className='text-gray-500'>{title}</CardDescription>
+                <CardTitle className="text-4xl tabular-nums text-gray-500">
+                    {value}
+                </CardTitle>
+            </CardHeader>
+        </CardUI>
     )
 }

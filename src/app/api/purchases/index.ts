@@ -126,7 +126,6 @@ const purchaseApp = new Hono()
                 return c.json({ error: 'Purchase not found' }, 404);
             }
 
-            // Define the type for update operations
             type UpdateOperation = {
                 where: { id: number };
                 data: { quantity: number };
@@ -134,6 +133,7 @@ const purchaseApp = new Hono()
 
             const updateOperations: UpdateOperation[] = [];
             const createOperations: { productId: number, quantity: number }[] = [];
+            const deleteOperations: number[] = []; 
 
             body.products.forEach((p: { productId: number, quantity: number }) => {
                 const existingProduct = purchase.products.find(prod => prod.productId === p.productId);
@@ -153,7 +153,13 @@ const purchaseApp = new Hono()
                 }
             });
 
-            // Perform updates
+            purchase.products.forEach((existingProduct) => {
+                const isStillPresent = body.products.some(p => p.productId === existingProduct.productId);
+                if (!isStillPresent) {
+                    deleteOperations.push(existingProduct.id);
+                }
+            });
+
             for (const updateOp of updateOperations) {
                 await prisma.productPurchase.update({
                     where: updateOp.where,
@@ -161,7 +167,6 @@ const purchaseApp = new Hono()
                 });
             }
 
-            // Perform creates
             if (createOperations.length > 0) {
                 await prisma.purchaseRecord.update({
                     where: { id: body.id },
@@ -170,6 +175,12 @@ const purchaseApp = new Hono()
                             create: createOperations,
                         },
                     },
+                });
+            }
+
+            for (const productId of deleteOperations) {
+                await prisma.productPurchase.delete({
+                    where: { id: productId },
                 });
             }
 

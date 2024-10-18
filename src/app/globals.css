@@ -11,6 +11,29 @@ body {
     text-wrap: balance;
   }
 }
+@media (max-width: 430px) {
+
+  /* iPhone 14 Pro Max width */
+  .chart-wrapper {
+    padding: 4px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .Card,
+  .DateRangePicker,
+  .Graphic,
+  .TopBuyersChart {
+    width: 100%;
+  }
+
+  .Button {
+    width: 100%;
+    text-align: center;
+  }
+}
 
 @layer base {
   :root {

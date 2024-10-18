@@ -1,6 +1,6 @@
 'use client'
-import { ReactNode, useEffect } from 'react';
-import { Users, Package, ShoppingCart } from "lucide-react"
+import { ReactNode, useState, useEffect } from 'react'
+import { Users, Package, ShoppingCart, Menu } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,14 @@ const navItems = [
 const AuthLayout = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
 
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
     const refreshToken = async () => {
         const refreshToken = getCookie('refreshToken')?.toString();
         if (!refreshToken) {
@@ -60,20 +68,18 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
 
     return (
         <div className="flex h-screen bg-[#272b2f] text-white relative">
-            <aside className={`w-[180px]`}>
-                <nav className="mt-5 px-2">
+            <aside className={`w-44 bg-white shadow-md ${isMobile ? 'hidden' : 'block'}`}>
+                <nav className="mt-8">
                     <ul className="space-y-2">
                         {navItems.map((item) => (
                             <li key={item.name}>
                                 <Link href={item.href}>
                                     <Button
                                         variant="ghost"
-                                        className="justify-start text-[#9a9f9e] hover:bg-[#212529] w-full"
+                                        className="w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900 flex flex-row gap-8" 
                                     >
-                                        <div className="flex flex-row gap-4 m-2 mx-4 text-[#66707b] hover:text-[#fdfcfa]">
-                                            <item.icon className="my-2" />
-                                            <p className='mt-2 text-lg'>{item.name}</p>
-                                        </div>
+                                        <item.icon className="my-2" />
+                                        {item.name}
                                     </Button>
                                 </Link>
                             </li>
@@ -81,11 +87,32 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                     </ul>
                 </nav>
             </aside>
-
-            <main className="flex-1 overflow-y-auto p-8 bg-[#222527]">
-                {children}
+            <div className="flex-1 flex flex-col">
+                <header className={`bg-white shadow-sm ${isMobile ? '' : 'hidden'}`}>
+                    <nav>
+                        <ul className="flex flex-row gap-8 items-center justify-center">
+                            {navItems.map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href}>
+                                        <Button
+                                            variant="ghost"
+                                            className="w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                        >
+                                            <item.icon className="my-2" />
+                                        </Button>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                </header>
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                <div className="container mx-auto px-6 py-8">
+                    {children}
+                </div>
             </main>
             <Toaster />
+            </div>
         </div>
     )
 };

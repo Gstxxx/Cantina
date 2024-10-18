@@ -123,7 +123,7 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
 
     if (!isModalOpen) return null;
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity / 100, 0);
 
     return (
         <div className='modal fixed inset-0 rounded-lg bg-[#222527]/95 border-transparent border-0 flex items-center justify-center z-50'>
@@ -148,7 +148,7 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
                         {filteredProducts.map(product => (
                             <div key={product.id} className="flex flex-col">
                                 <div className="flex justify-between items-center py-2">
-                                    <span className='text-white border-transparent border-0 rounded-lg'>{product.name} - R$ {product.price.toFixed(2)}</span>
+                                    <span className='text-white border-transparent border-0 rounded-lg'>{product.name} - R$ {(product.price / 100).toFixed(2)}</span>
                                     <a className='cursor-pointer' onClick={() => addToCart(product)}><PlusCircle size={20} className='text-green-500 hover:text-green-600' /></a>
                                 </div>
                                 <hr className="my-2 border-t border-gray-600 w-full" />
@@ -161,7 +161,7 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
                     <ScrollArea className="h-[440px] rounded-md p-4 overflow-auto bg-[#272b2f] text-sm border-transparent border-0 rounded-lg">
                         {cart.map(item => (
                             <div key={item.id} className="flex justify-between items-center py-2">
-                                <span>{item.name} - R$ {item.price.toFixed(2)}</span>
+                                <span>{item.name} - R$ {(item.price / 100).toFixed(2)}</span>
                                 <div className="flex items-center">
                                     <a className='cursor-pointer' onClick={() => updateQuantity(item.id, item.quantity - 1)}><MinusIcon size={10} className='text-red-500 hover:text-red-600' /></a>
 

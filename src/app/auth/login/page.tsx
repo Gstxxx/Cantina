@@ -6,10 +6,13 @@ import { useRouter } from 'next/navigation'
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { setCookie } from 'cookies-next';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const loginSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
+    email: z.string().email({ message: "Endereço de email inválido" }),
+    password: z.string().min(8, { message: "Senha deve ter ao menos 8 caracteres" }),
 });
 
 export async function action(formData: FormData) {
@@ -17,7 +20,7 @@ export async function action(formData: FormData) {
     const password = formData.get("password")?.toString();
 
     if (!email || !password) {
-        return { error: "Email and password are required." };
+        return { error: "Email e senha são obrigatórios." };
     }
 
     const result = await submitLoginForm({ email, password });
@@ -31,10 +34,10 @@ export async function action(formData: FormData) {
         }
         else {
             console.log(response);
-            return { error: "Invalid response from server" };
+            return { error: "Resposta inválida do servidor" };
         }
     } else {
-        return { error: "Invalid email or password." };
+        return { error: "Email ou senha inválidos." };
     }
 }
 
@@ -63,50 +66,66 @@ const LoginPage = () => {
                     router.push("/dashboard/purchases");
 
                 } else {
-                    setState({ ...state, error: "Invalid response from server", isLoading: false });
+                    setState({ ...state, error: "Resposta inválida do servidor", isLoading: false });
                 }
             } else {
                 const errorData = await result.json();
-                setState({ ...state, error: errorData.error || "An error occurred. Please try again.", isLoading: false });
+                setState({ ...state, error: errorData.error || "Ocorreu um erro. Por favor, tente novamente.", isLoading: false });
             }
         } catch (error) {
-            console.error("An error occurred:", error);
-            setState({ ...state, error: "An error occurred. Please try again.", isLoading: false });
+            console.error("Ocorreu um erro:", error);
+            setState({ ...state, error: "Ocorreu um erro. Por favor, tente novamente.", isLoading: false });
         } finally {
             setState(prev => ({ ...prev, isLoading: false }));
         }
     };
 
     return (
-        <div className="bg-[#272b2f] border-transparent border-0 flex items-center justify-center h-screen">
-            <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg bg-[#222527] border-transparent border-0 p-10 w-[400px]">
-                <h2 className="text-lg font-bold mb-4 text-orange-500 font-bold">Login</h2>
-                <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium text-orange-500">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        className="mt-1 block w-full border rounded-md p-2 text-white bg-[#272b2f] border-transparent border-0 active:border-orange-500"
-                        required
-                        {...register("email")}
-                    />
-                    {errors.email && <p className="text-xl font-bold text-red-500 m-4">{errors.email.message as string}</p>}
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 py-12 sm:px-6 lg:px-8">
+            <div className="w-full max-w-md space-y-8">
+                <div className="text-center">
+                    <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Entre na sua conta</h2>
                 </div>
-                <div className="mb-4">
-                    <label htmlFor="password" className="block text-sm font-medium text-orange-500">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        className="mt-1 block w-full border rounded-md p-2 text-white bg-[#272b2f] border-transparent border-0 active:border-orange-500"
-                        required
-                        {...register("password")}
-                    />
-                    {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
-                </div>
-                <button type="submit" className="w-full bg-orange-500 text-white p-2 rounded" disabled={state.isLoading}>
-                    {state.isLoading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+                    <div className="space-y-4 rounded-md shadow-sm">
+                        <div>
+                            <Label htmlFor="email" className="sr-only">
+                                Endereço de email
+                            </Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                autoComplete="email"
+                                required
+                                className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                                placeholder="Endereço de email"
+                                {...register("email")}
+                            />
+                            {errors.email && <p className="text-xl font-bold text-red-500 m-4">{errors.email.message as string}</p>}
+                        </div>
+                        <div>
+                            <Label htmlFor="password" className="sr-only">
+                                Senha
+                            </Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                autoComplete="current-password"
+                                required
+                                className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                                placeholder="Senha"
+                                {...register("password")}
+                            />
+                            {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
+                        </div>
+                        <div>
+                            <Button type="submit" className="w-full bg-orange-500 text-white p-2 rounded" disabled={state.isLoading}>
+                                {state.isLoading ? "Carregando..." : "Entrar"}
+                            </Button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

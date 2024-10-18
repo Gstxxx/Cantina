@@ -1,0 +1,81 @@
+/* Custom styles for react-date-range to match UICard */
+/* Dark mode styles for react-date-range */
+.rdrCalendarWrapper {
+    background-color: #fff !important; /* White background */
+    color: #000; /* Black text */
+    border: none; /* Remove borders */
+    display: flex; /* Display months side by side */
+    justify-content: space-between; /* Space months evenly */
+}
+
+.rdrDayNumber span {
+    color: #000; /* Black day numbers */
+}
+
+.rdrStaticRange {
+    background-color: #fff !important; /* White background */
+    color: #000; /* Black text */
+}
+.rdrDefinedRangesWrapper {
+    background-color: rgb(255, 165, 0 / 50) !important;
+    /* Orange background for selected */
+    color: #000 !important; /* Black text */
+
+}
+
+/* Add this to your CSS file or a style block */
+.rdrDefinedRangesWrapper {
+    display: none;
+}
+.rdrStaticRange.rdrStaticRangeSelected .rdrStaticRangeLabel {
+    background-color: rgb(255, 165, 0 / 50) !important; /* Orange background for selected */
+    color: #000 !important; /* Black text */
+}
+/* Add this to your CSS file or a style block */
+.rdrDayDisabled {
+    color: #000;
+    /* Change to your desired color */
+    background-color: rgb(255, 165, 0);
+    /* Optional: change background color */
+    opacity: 0.5;
+    /* Optional: adjust opacity */
+}
+.rdrStaticRange.rdrStaticRangeSelected:hover .rdrStaticRangeLabel {
+    background-color: rgb(255, 165, 0 / 70) !important; /* Lighter orange background on hover */
+    color: #000 !important; /* Black text on hover */
+}
+
+.rdrDayToday .rdrDayNumber span {
+    color: rgb(255, 165, 0); /* Orange for today's date */
+}
+
+.rdrDaySelected .rdrDayNumber span,
+.rdrDayInRange .rdrDayNumber span {
+    background-color: rgb(255, 165, 0); /* Orange background for selected dates */
+    color: #000; /* Black text for selected dates */
+}
+
+.rdrMonthAndYearPickers select {
+    background-color: #fff !important; /* White background */
+    color: #000; /* Black text */
+    border: none; /* Remove border */
+}
+
+.rdrMonthAndYearWrapper {
+    background-color: #fff !important; /* White background */
+    color: #000; /* Black text */
+}
+
+.rdrNextPrevButton {
+    color: rgb(255, 165, 0); /* Orange for navigation buttons */
+}
+
+.rdrDay {
+    color: rgb(255, 165, 0) !important; /* Orange text */
+}
+
+.rdrDay .rdrInRange,
+.rdrDay .rdrStartEdge,
+.rdrDay .rdrEndEdge {
+    color: rgb(255, 165, 0) !important; /* Orange text */
+}
