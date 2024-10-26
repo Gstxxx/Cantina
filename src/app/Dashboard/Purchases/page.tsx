@@ -18,6 +18,8 @@ import './range-date.css'
 import Pagination from '@/components/ui/Pagination'
 import { ptBR } from 'date-fns/locale'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import Loading from '@/components/ui/loading'
+import { ErrorAlert } from '@/components/ui/notify' // Import the ErrorAlert component
 
 type DateRange = {
     selection: {
@@ -115,11 +117,17 @@ const PurchaseAnalysis = () => {
     }
 
     useEffect(() => {
-        fetchPaginatedData(currentPage)
-        fetchDataUnpaginated()
+        const fetchDataWithDelay = async () => {
+            setLoading(true)
+            await new Promise(resolve => setTimeout(resolve, 500))
+            await fetchPaginatedData(currentPage)
+            await fetchDataUnpaginated()
+        }
+        fetchDataWithDelay()
     }, [currentPage, startDate, endDate])
 
-    if (loading) return <div className='text-orange-500'>Loading...</div>
+    if (loading) return <Loading />
+
     if (error) return <div>Error: {error}</div>
 
     const totalPurchases = purchases.length
@@ -170,11 +178,12 @@ const PurchaseAnalysis = () => {
 
     return (
         <div className="chart-wrapper mx-auto flex max-w-6xl flex-col flex-wrap items-start justify-center gap-6 p-6 sm:flex-row sm:p-8">
+            {error && <ErrorAlert message={error} duration={5000} />}
             <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 mb-4">
-                <Card title="Total de Compras" value={totalPurchases < 0 ? "nenhuma venda" : totalPurchases} />
-                <Card title="Total de Quantidade Vendida" value={totalPurchases < 0 ? "nenhuma venda" : totalQuantity} />
-                <Card title="Total de Receita" value={totalPurchases < 0 ? "nenhuma venda" : totalRevenueFormatted} />
-                <Card title="Valor Médio do Pedido" value={totalPurchases < 0 ? "nenhuma venda" : odervalstring} />
+                <Card title="Total de Compras" value={totalPurchases < 0 ? "nenhuma venda" : totalPurchases} color="blue" icon="ShoppingCart" />
+                <Card title="Total de Quantidade Vendida" value={totalPurchases < 0 ? "nenhuma venda" : totalQuantity} color="green" icon="Package" />
+                <Card title="Total de Receita" value={totalPurchases < 0 ? "nenhuma venda" : totalRevenueFormatted} color="yellow" icon="DollarSign" />
+                <Card title="Valor Médio do Pedido" value={totalPurchases < 0 ? "nenhuma venda" : odervalstring} color="purple" icon="TrendingUp" />
             </div>
             <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mb-4">
                 <DateRangePicker

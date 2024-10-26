@@ -1,6 +1,6 @@
 'use client'
 import { ReactNode, useState, useEffect } from 'react'
-import { Users, Package, ShoppingCart, Menu } from "lucide-react"
+import { Users, Package, ShoppingCart, CoffeeIcon } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
@@ -108,6 +108,18 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                 </header>
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                 <div className="container mx-auto px-6 py-8">
+                    <div className="flex flex-row">
+                        <div className="grid grid-cols-1 gap-2">
+                            <div className="flex flex-row gap-2 items-center">
+                        <CoffeeIcon className="w-10 h-10 text-orange-500" />
+                        <h1 className="text-3xl font-bold text-black">Parada dos sabores</h1>
+                            </div>
+                        <p className="text-gray-600 mt-1">Bem-vindo ao seu painel de controle</p>
+                        </div>
+                        <div className="flex flex-row gap-2">
+                            {/* bt here*/}
+                        </div>
+                    </div>
                     {children}
                 </div>
             </main>

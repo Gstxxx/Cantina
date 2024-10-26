@@ -1,5 +1,5 @@
 'use client'
-import LoginPage from "./auth/login/page"
+import LoginPage from "./Auth/Login/page"
 
 const page = () => {
   return (
