@@ -13,6 +13,9 @@ import { MoreHorizontal } from "lucide-react";
 import { submit as fetchProducts } from './fetch';
 import { submit as submitDeleteProduct } from './delete';
 import { submit as submitUpdateProduct } from './update';
+import Pagination from '@/components/ui/Pagination'
+import { ScrollArea } from "@/components/ui/scroll-area";
+import CreateProductModal from '../CreateProduct/CreateProductModal';
 
 type Product = {
     id: number;
@@ -61,6 +64,7 @@ export default function ListProducts() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false); // State for modal visibility
 
     const fetchUsersData = async (page: number) => {
         try {
@@ -138,133 +142,123 @@ export default function ListProducts() {
     };
 
     return (
-        <div className='rounded-lg bg-[#272b2f] border-transparent border-0'>
-            <Card className='rounded-lg bg-[#272b2f] border-transparent border-0'>
-                <CardHeader >
-                    <CardTitle className="text-2xl text-orange-500">Administrar produtos</CardTitle>
-                    <CardDescription>Ver e atualizar produtos</CardDescription>
+
+        <div>
+            <Card className="w-full mx-auto bg-white shadow-md border-transparent border-0 rounded-lg">
+                <CardHeader>
+                    <div className="flex flex-row justify-between gap-4">
+                        <CardTitle className='text-gray-500'>Administrar produtos</CardTitle>
+                        <Button
+                            className='bg-[#ffa500] text-white p-2 rounded-md mt-2 sm:mt-0'
+                            onClick={() => setIsCreateProductModalOpen(true)} // Open modal on click
+                        >
+                            Criar Novo Produto
+                        </Button>
+                    </div>
+                    <CardDescription className='text-gray-500'>Ver e atualizar produtos</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {error && <div className="text-red-500">{error}</div>}
 
-                    <div className="flex space-x-2 mb-4">
-                        <Input
-                            placeholder="Procurar produtos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-sm bg-[#222527] border-transparent border-0 p-4 active:border-orange-500"
-                        />
-                    </div>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className='text-orange-500 text-left text-xl'>Nome</TableHead>
-                                <TableHead className='text-orange-500 text-left text-xl'>Preço</TableHead>
-                                <TableHead className='text-orange-500 text-left text-xl'>Criado em</TableHead>
-                                <TableHead className='text-orange-500 text-left text-xl'>Ações</TableHead>
-                            </TableRow >
-                        </TableHeader >
-                        <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
-                            {filteredUsers.map((product) => (
-                                <TableRow key={product.id}>
-                                    <TableCell>{product.name}</TableCell>
-                                    <TableCell>R$ {formatPrice(product.price)}</TableCell>
-                                    <TableCell>{formatDate(product.created_at)}</TableCell>
-                                    <TableCell >
-                                        <DropdownMenu >
-                                            <DropdownMenuTrigger asChild >
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Abrir Menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
-                                                <DropdownMenuItem className="text-white" onClick={() => handleEditUser(product)}>
-                                                    Editar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        if (window.confirm('Você deseja deletar o produto?')) {
-                                                            handleDeleteUser(product.id);
-                                                        }
-                                                    }}
-                                                    className="text-red-600"
-                                                >
-                                                    Deletar
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table >
-
-                    {editingProduct && (
-                        <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
-                            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
-                                <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Produto</h2>
-                                <form
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const formData = new FormData(e.currentTarget);
-                                        formData.append("intent", "Update-Product");
-                                        const priceInCents = Number(formData.get("price")) * 100;
-                                        formData.set("price", priceInCents.toString());
-                                        handleUpdateUser(formData);
-                                    }}
-                                    className="space-y-4"
-                                >
-                                    <input type="hidden" name="id" value={editingProduct.id} />
-                                    <div>
-                                        <label htmlFor="name" className="block text-sm font-medium mb-2">Nome</label>
-                                        <input type="text" name="name" defaultValue={editingProduct.name} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="price" className="block text-sm font-medium mb-2">Preço</label>
-                                        <Input
-                                            className='bg-[#222527] border-transparent border-0 p-4 active:border-orange-500 mt-4'
-                                            type="number"
-                                            placeholder="Preço"
-                                            name="price"
-                                            defaultValue={(editingProduct.price / 100).toFixed(2)}
-                                            step="0.01"
-                                        />
-                                    </div>
-                                    <div className="flex justify-end space-x-2">
-                                        <Button type="button" className='bg-red-500 p-2 hover:bg-red-600' onClick={() => setEditingUser(null)}>Cancelar</Button>
-                                        <Button type="submit" className='bg-green-500 p-2 hover:bg-green-600'>Atualizar</Button>
-                                    </div>
-                                </form>
+                    <input
+                        type="text"
+                        placeholder="Procurar produtos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="mb-4 p-2 border-none bg-gray-100 rounded-lg"
+                    />
+                    <ScrollArea className='max-h-screen overflow-auto h-[400px]'>
+                        <Table>
+                            <TableHeader className='border'>
+                                <TableRow>
+                                    <TableHead className='w-[200px] text-gray-500'>Nome</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Preço</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Criado em</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Ações</TableHead>
+                                </TableRow >
+                            </TableHeader >
+                            <TableBody className='border'>
+                                {filteredUsers.map((product) => (
+                                    <TableRow className='font-medium text-gray-400 bg-gray-100 border' key={product.id}>
+                                        <TableCell>{product.name}</TableCell>
+                                        <TableCell>R$ {formatPrice(product.price)}</TableCell>
+                                        <TableCell>{formatDate(product.created_at)}</TableCell>
+                                        <TableCell >
+                                            <DropdownMenu >
+                                                <DropdownMenuTrigger asChild >
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Abrir Menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent
+                                                    className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
+                                                    <DropdownMenuItem className="text-white" onClick={() => handleEditUser(product)}>
+                                                        Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            if (window.confirm('Você deseja deletar o produto?')) {
+                                                                handleDeleteUser(product.id);
+                                                            }
+                                                        }}
+                                                        className="text-red-600"
+                                                    >
+                                                        Deletar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table >
+                        {editingProduct && (
+                            <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
+                                <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
+                                    <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Produto</h2>
+                                    <form
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const formData = new FormData(e.currentTarget);
+                                            formData.append("intent", "Update-Product");
+                                            const priceInCents = Number(formData.get("price")) * 100;
+                                            formData.set("price", priceInCents.toString());
+                                            handleUpdateUser(formData);
+                                        }}
+                                        className="space-y-4"
+                                    >
+                                        <input type="hidden" name="id" value={editingProduct.id} />
+                                        <div>
+                                            <label htmlFor="name" className="block text-sm font-medium mb-2">Nome</label>
+                                            <input type="text" name="name" defaultValue={editingProduct.name} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="price" className="block text-sm font-medium mb-2">Preço</label>
+                                            <Input
+                                                className='bg-[#222527] border-transparent border-0 p-4 active:border-orange-500 mt-4'
+                                                type="number"
+                                                placeholder="Preço"
+                                                name="price"
+                                                defaultValue={(editingProduct.price / 100).toFixed(2)}
+                                                step="0.01"
+                                            />
+                                        </div>
+                                        <div className="flex justify-end space-x-2">
+                                            <Button type="button" className='bg-red-500 p-2 hover:bg-red-600' onClick={() => setEditingUser(null)}>Cancelar</Button>
+                                            <Button type="submit" className='bg-green-500 p-2 hover:bg-green-600'>Atualizar</Button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                    )
-                    }
-
+                        )
+                        }
+                    </ScrollArea>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 </CardContent >
-                <div className="mt-4 flex justify-center items-center space-x-2">
-                    <Button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
-                    >
-                        Anterior
-                    </Button>
-                    <span>Pagina {currentPage} de {totalPages}</span>
-                    <Button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
-                    >
-                        Próxima
-                    </Button>
-                </div>
-                <div className="mt-2 text-center text-sm text-gray-500">
-                    Total de Clientes: {totalCount}
-                </div>
             </Card >
+            {isCreateProductModalOpen && <CreateProductModal />} {/* Render modal conditionally */}
         </div >
     );
 }

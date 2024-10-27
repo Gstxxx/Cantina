@@ -3,12 +3,15 @@ import React, { useEffect, useState } from 'react'
 import { submit as fetchProdutcts } from './ListProducts/fetch'
 import { Product } from 'app/types'
 import ListProducts from './ListProducts/ListProducts';
-import {CreateProduct} from './CreateProduct/CreateProduct';
+import Loading from '@/components/ui/loading'; // Import the Loading component
+
 export default function ClientsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(false); // Add loading state
 
     const fetchProductsData = async (page: number) => {
+        setLoading(true); // Set loading to true before fetching
         try {
             const response = await fetchProdutcts(page);
             if (response.ok) {
@@ -19,6 +22,8 @@ export default function ClientsPage() {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setTimeout(() => setLoading(false), 500); // Delay hiding the loading indicator by 500ms
         }
     };
 
@@ -27,9 +32,8 @@ export default function ClientsPage() {
     }, [currentPage]);
 
     return (
-        <div className="grid grid-cols-2 gap-4">
-            <ListProducts />
-            <CreateProduct />
+        <div>
+            {loading ? <Loading /> : <ListProducts />} {/* Conditionally render Loading or ListProducts */}
         </div>
     )
 }

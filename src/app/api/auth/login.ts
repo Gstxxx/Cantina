@@ -32,7 +32,7 @@ const authApp = new Hono()
             const payload = {
                 sub: user.id,
                 role: user.type,
-                exp: Math.floor(Date.now() / 1000) + 60 * 15,
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
             };
             if (!process.env.JWT_SECRET) {
                 return c.json(

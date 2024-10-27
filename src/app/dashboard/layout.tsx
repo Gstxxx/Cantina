@@ -1,6 +1,6 @@
 'use client'
 import { ReactNode, useState, useEffect } from 'react'
-import { Users, Package, ShoppingCart, CoffeeIcon } from "lucide-react"
+import { Users, Package, ShoppingCart, CoffeeIcon,LogOut } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { useRouter, usePathname } from 'next/navigation'
@@ -67,6 +67,12 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
         checkAuth();
     }, [router]);
 
+    const handleLogout = () => {
+        setCookie('token', '', { maxAge: -1 });
+        setCookie('refreshToken', '', { maxAge: -1 });
+        router.push('/'); 
+    };
+
     return (
         <div className="flex h-screen bg-[#272b2f] text-white relative">
             <aside className={`w-64 bg-white shadow-md ${isMobile ? 'hidden' : 'block'}`}>
@@ -85,6 +91,16 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <Button
+                                variant="ghost"
+                                onClick={handleLogout}
+                                className="w-full justify-start text-gray-600 font-bold hover:bg-gray-100 hover:text-red-500 flex flex-row gap-8"
+                            >
+                                <LogOut className="my-2" />
+                                Logout
+                            </Button>
+                        </li>
                     </ul>
                 </nav>
             </aside>
@@ -116,9 +132,6 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                         <h1 className="text-3xl font-bold text-black">Parada dos sabores</h1>
                             </div>
                         <p className="text-gray-600 mt-1">Bem-vindo ao seu painel de controle</p>
-                        </div>
-                        <div className="flex flex-row gap-2">
-                            {/* bt here*/}
                         </div>
                     </div>
                     {children}

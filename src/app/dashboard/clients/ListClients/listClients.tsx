@@ -17,6 +17,11 @@ import { submit as submitUpdateUser } from './update';
 import { submit as submitGeneratePDF } from './generatePdf';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { submit as searchUsers } from './search';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Pagination from '@/components/ui/Pagination'
+import CreateClientModal from '../CreateClient/CreateClient';
+
+
 export async function action(formData: FormData) {
     const intent = formData.get("intent");
 
@@ -71,6 +76,7 @@ export default function ListUsers() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+    const [isCreateClientModalOpen, setIsCreateClientModalOpen] = useState(false);
 
     const fetchPDF = async (id: number) => {
         try {
@@ -209,7 +215,7 @@ export default function ListUsers() {
 
         const result = await action(formData);
         if ('success' in result) {
-            fetchUsersData(currentPage); // Refresh user list
+            fetchUsersData(currentPage); 
         } else if ('error' in result) {
             setError(result.error);
         }
@@ -218,8 +224,8 @@ export default function ListUsers() {
     const handleUpdateUser = async (formData: FormData) => {
         const result = await action(formData);
         if ('success' in result) {
-            fetchUsersData(currentPage); // Refresh user list
-            setEditingUser(null); // Close modal
+            fetchUsersData(currentPage); 
+            setEditingUser(null);
         } else if ('error' in result) {
             setError(result.error);
         }
@@ -254,7 +260,7 @@ export default function ListUsers() {
 
     const fetchSearchedUsersData = async (search: string) => {
         try {
-            const response = await searchUsers(search); // Use the search API
+            const response = await searchUsers(search);
 
             if (response.ok) {
                 const data = await response.json();
@@ -264,8 +270,8 @@ export default function ListUsers() {
                         purchases: client.purchases || []
                     }));
                     setUsers(clientsWithPurchases as Client[]);
-                    setTotalPages(1); // Default to 1 page for search results
-                    setTotalCount(clientsWithPurchases.length); // Total count is the length of the search results
+                    setTotalPages(1);
+                    setTotalCount(clientsWithPurchases.length);
                 } else {
                     setError("No clients found.");
                 }
@@ -283,130 +289,116 @@ export default function ListUsers() {
     };
 
     return (
-        <div className='rounded-lg bg-[#272b2f] border-transparent border-0'>
-            <Card className='border-transparent border-0'>
-                <CardHeader >
-                    <CardTitle className="text-2xl text-orange-500">Administrar Clientes</CardTitle>
-                    <CardDescription>Ver e atualizar clientes</CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-auto">
-                    {error && <div className="text-red-500">{error}</div>}
-
-                    <div className="flex space-x-2 mb-4">
-                        <Input
-                            placeholder="Procurar clientes..."
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            className="max-w-sm bg-[#222527] border-transparent border-0 p-4 active:border-orange-500"
-                        />
+        <div>
+            <Card className="w-full mx-auto bg-white shadow-md border-transparent border-0 rounded-lg">
+                <CardHeader>
+                    <div className="flex flex-row justify-between gap-4">
+                        <CardTitle className='text-gray-500'>Administrar Clientes</CardTitle>
+                        <Button
+                            className='bg-[#ffa500] text-white p-2 rounded-md mt-2 sm:mt-0'
+                            onClick={() => setIsCreateClientModalOpen(true)}
+                        >
+                            Criar Novo Cliente
+                        </Button>
                     </div>
-
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className='text-orange-500'>Nome</TableHead>
-                                <TableHead className='text-orange-500'>Celular</TableHead>
-                                <TableHead className='text-orange-500'>Criado em</TableHead>
-                                <TableHead className='text-orange-500'>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody className='bg-[#222527] border-transparent border-0 p-4 rounded-lg'>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>{user.name}</TableCell>
-                                    <TableCell>{user.phone}</TableCell>
-                                    <TableCell>{formatDate(user.created_at)}</TableCell>
-                                    <TableCell >
-                                        <DropdownMenu >
-
-                                            <DropdownMenuTrigger asChild >
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Abrir Menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
-                                                <DropdownMenuItem className="text-white" onClick={() => handleEditUser(user)}>
-                                                    Editar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        if (window.confirm('Você deseja deletar o produto?')) {
-                                                            handleDeleteUser(user.id);
-                                                        }
-                                                    }}
-                                                    className="text-red-600"
-                                                >
-                                                    Deletar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => handleGeneratePDF(user.id)}
-                                                    className="text-blue-600"
-                                                >
-                                                    Gerar PDF
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                    <CardDescription className='text-gray-500'>Ver e atualizar clientes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {error && <div className="text-red-500">{error}</div>}
+                    <input
+                        type="text"
+                        placeholder="Procurar clientes..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        className="mb-4 p-2 border-none bg-gray-100 rounded-lg"
+                    />
+                    <ScrollArea className='max-h-screen overflow-auto h-[400px]'>
+                        <Table>
+                            <TableHeader className='border'>
+                                <TableRow>
+                                    <TableHead className='w-[200px] text-gray-500'>Nome</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Celular</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Criado em</TableHead>
+                                    <TableHead className='w-[200px] text-gray-500'>Actions</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-
-                    {editingUser && (
-                        <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
-                            <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
-                                <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Cliente</h2>
-                                <form
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const formData = new FormData(e.currentTarget);
-                                        formData.append("intent", "Update-User");
-                                        handleUpdateUser(formData);
-                                    }}
-                                    className="space-y-4"
-                                >
-                                    <input type="hidden" name="id" value={editingUser.id} />
-                                    <div>
-                                        <label htmlFor="name" className="block text-sm font-medium mb-2">Nome</label>
-                                        <input type="text" name="name" defaultValue={editingUser.name} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="phone" className="block text-sm font-medium mb-2">Celular</label>
-                                        <input type="text" name="phone" defaultValue={editingUser.phone} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
-                                    </div>
-                                    <div className="flex justify-end space-x-2">
-                                        <Button type="button" className='bg-red-500 p-2 hover:bg-red-600' onClick={() => setEditingUser(null)}>Cancelar</Button>
-                                        <Button type="submit" className='bg-green-500 p-2 hover:bg-green-600'>Atualizar</Button>
-                                    </div>
-                                </form>
+                            </TableHeader>
+                            <TableBody className='border'>
+                                {filteredUsers.map((user) => (
+                                    <TableRow className='font-medium text-gray-400 bg-gray-100 border' key={user.id}>
+                                        <TableCell>{user.name}</TableCell>
+                                        <TableCell>{user.phone}</TableCell>
+                                        <TableCell>{formatDate(user.created_at)}</TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Abrir Menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent
+                                                    className="bg-[#272b2f] border-transparent border-0 p-4" align="end">
+                                                    <DropdownMenuItem className="text-white" onClick={() => handleEditUser(user)}>
+                                                        Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => {
+                                                            if (window.confirm('Você deseja deletar o produto?')) {
+                                                                handleDeleteUser(user.id);
+                                                            }
+                                                        }}
+                                                        className="text-red-600"
+                                                    >
+                                                        Deletar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleGeneratePDF(user.id)}
+                                                        className="text-blue-600"
+                                                    >
+                                                        Gerar PDF
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                        {editingUser && (
+                            <div className="fixed inset-0 rounded-lg bg-[#222527]/50 border-transparent border-0 flex items-center justify-center z-50">
+                                <div className="rounded-lg bg-[#272b2f] border-transparent border-0 p-6 shadow-lg w-96">
+                                    <h2 className="text-xl font-bold mb-4 text-orange-500">Editando Cliente</h2>
+                                    <form
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const formData = new FormData(e.currentTarget);
+                                            formData.append("intent", "Update-User");
+                                            handleUpdateUser(formData);
+                                        }}
+                                        className="space-y-4"
+                                    >
+                                        <input type="hidden" name="id" value={editingUser.id} />
+                                        <div>
+                                            <label htmlFor="name" className="block text-sm font-medium mb-2">Nome</label>
+                                            <input type="text" name="name" defaultValue={editingUser.name} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="phone" className="block text-sm font-medium mb-2">Celular</label>
+                                            <input type="text" name="phone" defaultValue={editingUser.phone} className="bg-[#222527] w-full p-2 border-transparent border-0 rounded-md" />
+                                        </div>
+                                        <div className="flex justify-end space-x-2">
+                                            <Button type="button" className='bg-red-500 p-2 hover:bg-red-600' onClick={() => setEditingUser(null)}>Cancelar</Button>
+                                            <Button type="submit" className='bg-green-500 p-2 hover:bg-green-600'>Atualizar</Button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                    )}
-
+                        )}
+                    </ScrollArea>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 </CardContent>
-                <div className="mt-4 flex justify-center items-center space-x-2">
-                    <Button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
-                    >
-                        Anterior
-                    </Button>
-                    <span>Pagina {currentPage} de {totalPages}</span>
-                    <Button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className=' p-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-500/50 text-white/50'
-                    >
-                        Próxima
-                    </Button>
-                </div>
-                <div className="mt-2 text-center text-sm text-gray-500">
-                    Total de Clientes: {totalCount}
-                </div>
             </Card>
-        </div >
+            {isCreateClientModalOpen && <CreateClientModal />}
+        </div>
     );
 }

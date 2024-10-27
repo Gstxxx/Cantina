@@ -12,13 +12,13 @@ export function Card({ title, value, colorIcon, colorBg, icon }: { title: string
     const IconComponent = () => {
         switch (icon) {
             case 'ShoppingCart':
-                return <ShoppingCart className={`${colorIcon} rounded-lg ${colorBg} size-32`} />;
+                return <ShoppingCart className={`${colorIcon}`} />;
             case 'Package':
-                return <Package className={`${colorIcon} rounded-lg ${colorBg} size-32`} />;
+                return <Package className={`${colorIcon}`} />;
             case 'DollarSign':
-                return <DollarSign className={`${colorIcon} rounded-lg ${colorBg} size-32`} />;
+                return <DollarSign className={`${colorIcon}`} />;
             case 'TrendingUp':
-                return <TrendingUp className={`${colorIcon} rounded-lg ${colorBg} size-32`} />;
+                return <TrendingUp className={`${colorIcon}`} />;
             default:
                 return null;
         }
@@ -29,8 +29,10 @@ export function Card({ title, value, colorIcon, colorBg, icon }: { title: string
             className="bg-white shadow-md rounded-lg lg:max-w-md" x-chunk="charts-01-chunk-0">
             <CardHeader className="space-y-0 pb-2 grid grid-cols-1">
                 <div className='flex flex-row gap-4'>
-                    <div>
-                        <IconComponent />
+                    <div className='flex flex-col '>
+                        <div className={`p-4 ${colorBg} rounded-lg`}>
+                            <IconComponent />
+                        </div>
                     </div>
                     <div className='flex flex-col'>
                         <CardDescription className='text-gray-500'>{title}</CardDescription>

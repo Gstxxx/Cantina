@@ -3,12 +3,15 @@ import React, { useEffect, useState } from 'react'
 import { submit as fetchClients } from './ListClients/fetch'
 import { Client } from 'app/types'
 import ListClients from './ListClients/listClients';
-import { CreateClient } from './CreateClient/CreateClient';
+import Loading from '@/components/ui/loading'; 
+
 export default function ClientsPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const fetchClientsData = async (page: number) => {
+        setLoading(true);
         try {
             const response = await fetchClients(page);
             if (response.ok) {
@@ -19,6 +22,8 @@ export default function ClientsPage() {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setTimeout(() => setLoading(false), 500);
         }
     };
 
@@ -27,9 +32,8 @@ export default function ClientsPage() {
     }, [currentPage]);
 
     return (
-        <div className="grid grid-cols-2 gap-4">
-            <ListClients />
-            <CreateClient />
+        <div className="grid grid-cols-1">
+            {loading ? <Loading /> : <ListClients />}
         </div>
     )
 }
