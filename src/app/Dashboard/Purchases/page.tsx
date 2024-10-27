@@ -180,10 +180,11 @@ const PurchaseAnalysis = () => {
         <div className="chart-wrapper mx-auto flex max-w-6xl flex-col flex-wrap items-start justify-center gap-6 p-6 sm:flex-row sm:p-8">
             {error && <ErrorAlert message={error} duration={5000} />}
             <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 mb-4">
-                <Card title="Total de Compras" value={totalPurchases < 0 ? "nenhuma venda" : totalPurchases} color="blue" icon="ShoppingCart" />
-                <Card title="Total de Quantidade Vendida" value={totalPurchases < 0 ? "nenhuma venda" : totalQuantity} color="green" icon="Package" />
-                <Card title="Total de Receita" value={totalPurchases < 0 ? "nenhuma venda" : totalRevenueFormatted} color="yellow" icon="DollarSign" />
-                <Card title="Valor Médio do Pedido" value={totalPurchases < 0 ? "nenhuma venda" : odervalstring} color="purple" icon="TrendingUp" />
+                <Card title="Total de Compras" value={totalPurchases < 0 ? "nenhuma venda" : totalPurchases} colorIcon="text-blue-500" colorBg="bg-blue-500/50" icon="ShoppingCart" />
+                <Card title="Total de Quantidade Vendida" value={totalPurchases < 0 ? "nenhuma venda" : totalQuantity} colorIcon="text-green-500" colorBg="bg-green-500/50" icon="Package" />
+                <Card title="Total de Receita" value={totalPurchases < 0 ? "nenhuma venda" : totalRevenueFormatted} colorIcon='text-yellow-500' colorBg='bg-yellow-500/50' icon="DollarSign" />
+                <Card title="Valor Médio do Pedido" value={totalPurchases < 0 ? "nenhuma venda" : odervalstring} colorIcon='text-purple-500' colorBg='bg-purple-500/50' icon="TrendingUp" />
+                
             </div>
             <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mb-4">
                 <DateRangePicker

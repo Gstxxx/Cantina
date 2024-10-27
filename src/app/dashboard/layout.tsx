@@ -3,7 +3,7 @@ import { ReactNode, useState, useEffect } from 'react'
 import { Users, Package, ShoppingCart, CoffeeIcon } from "lucide-react"
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
 
@@ -15,6 +15,7 @@ const navItems = [
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
+    const pathname = usePathname();
 
     const [isMobile, setIsMobile] = useState(false)
 
@@ -68,15 +69,15 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
 
     return (
         <div className="flex h-screen bg-[#272b2f] text-white relative">
-            <aside className={`w-44 bg-white shadow-md ${isMobile ? 'hidden' : 'block'}`}>
+            <aside className={`w-64 bg-white shadow-md ${isMobile ? 'hidden' : 'block'}`}>
                 <nav className="mt-8">
-                    <ul className="space-y-2">
+                    <ul className="space-y-2 mx-4">
                         {navItems.map((item) => (
                             <li key={item.name}>
                                 <Link href={item.href}>
                                     <Button
                                         variant="ghost"
-                                        className="w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900 flex flex-row gap-8" 
+                                        className={`w-full justify-start text-gray-600 font-bold hover:bg-gray-100 hover:text-gray-900 flex flex-row gap-8 ${pathname === item.href ? 'bg-orange-100 text-orange-500' : ''}`}
                                     >
                                         <item.icon className="my-2" />
                                         {item.name}
@@ -96,7 +97,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                                     <Link href={item.href}>
                                         <Button
                                             variant="ghost"
-                                            className="w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                            className={`w-full justify-start text-gray-600 hover:bg-gray-100 hover:text-gray-900 ${pathname === item.href ? 'bg-orange-100 text-orange-500' : ''}`}
                                         >
                                             <item.icon className="my-2" />
                                         </Button>
