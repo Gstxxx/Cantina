@@ -40,7 +40,6 @@ const PurchaseAnalysis = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
 
@@ -52,10 +51,6 @@ const PurchaseAnalysis = () => {
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
-
-    const toggleModal = () => {
-        setIsModalOpen(!isModalOpen)
-    }
 
     const fetchPaginatedData = async (page: number) => {
         try {
@@ -184,7 +179,6 @@ const PurchaseAnalysis = () => {
                 <Card title="Total de Quantidade Vendida" value={totalPurchases < 0 ? "nenhuma venda" : totalQuantity} colorIcon="text-green-500" colorBg="bg-green-500/50" icon="Package" />
                 <Card title="Total de Receita" value={totalPurchases < 0 ? "nenhuma venda" : totalRevenueFormatted} colorIcon='text-yellow-500' colorBg='bg-yellow-500/50' icon="DollarSign" />
                 <Card title="Valor Médio do Pedido" value={totalPurchases < 0 ? "nenhuma venda" : odervalstring} colorIcon='text-purple-500' colorBg='bg-purple-500/50' icon="TrendingUp" />
-                
             </div>
             <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 mb-4">
                 <DateRangePicker
@@ -201,13 +195,11 @@ const PurchaseAnalysis = () => {
                     </>
                 )}
             </div>
-            {isModalOpen && <PurchaseModal />}
             {totalPurchases > 0 ? (
                 <UICard className="w-full mx-auto bg-white shadow-md border-transparent border-0 rounded-lg">
                     <CardHeader>
                         <div className="flex flex-row justify-between gap-4">
                             <CardTitle className='text-gray-500'>Compras Recentes</CardTitle>
-                            <Button className='bg-[#ffa500] text-white p-2 rounded-md mt-2 sm:mt-0' onClick={toggleModal}>Criar Nova Venda</Button>
                         </div>
                         <CardDescription className='text-gray-500'>Abaixo estão listadas as compras realizadas no período selecionado</CardDescription>
                     </CardHeader>

@@ -112,7 +112,8 @@ export default function ListUsers() {
                     font: timesRomanFont,
                     color: rgb(0, 0, 0),
                 });
-                page.drawText('Outubro 2024', {
+                const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                page.drawText(`${months[startDate.getMonth()]} ${startDate.getFullYear()}`, {
                     x: 450,
                     y: 370,
                     size: 12,

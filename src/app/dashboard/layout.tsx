@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter, usePathname } from 'next/navigation'
 import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
+import PurchaseModal from '../Dashboard/Purchases/CreatePurchase/page';
 
 const navItems = [
     { name: 'Compras', href: '/Dashboard/Purchases', icon: ShoppingCart },
@@ -16,15 +17,20 @@ const navItems = [
 const AuthLayout = ({ children }: { children: ReactNode }) => {
     const router = useRouter();
     const pathname = usePathname();
+    const [isMobile, setIsMobile] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [isMobile, setIsMobile] = useState(false)
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
+    };
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        handleResize()
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const refreshToken = async () => {
         const refreshToken = getCookie('refreshToken')?.toString();
         if (!refreshToken) {
@@ -123,21 +129,23 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                         </ul>
                     </nav>
                 </header>
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                <div className="container mx-auto px-6 py-8">
-                    <div className="flex flex-row">
-                        <div className="grid grid-cols-1 gap-2">
-                            <div className="flex flex-row gap-2 items-center">
-                        <CoffeeIcon className="w-10 h-10 text-orange-500" />
-                        <h1 className="text-3xl font-bold text-black">Parada dos sabores</h1>
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                    <div className="container mx-auto px-6 py-8">
+                        <div className="flex flex-row justify-between items-start">
+                            <div className="grid grid-cols-1 gap-2">
+                                <div className="flex flex-row gap-2 items-center">
+                                    <CoffeeIcon className="w-10 h-10 text-orange-500" />
+                                    <h1 className="text-3xl font-bold text-black">Parada dos sabores</h1>
+                                </div>
+                                <p className="text-gray-600 mt-1">Bem-vindo ao seu painel de controle</p>
                             </div>
-                        <p className="text-gray-600 mt-1">Bem-vindo ao seu painel de controle</p>
+                            <Button className='bg-[#ffa500] text-white p-2 rounded-md' onClick={toggleModal}>Criar Nova Venda</Button>
                         </div>
+                        {children}
                     </div>
-                    {children}
-                </div>
-            </main>
-            <Toaster />
+                </main>
+                <Toaster />
+                {isModalOpen && <PurchaseModal />}
             </div>
         </div>
     )
