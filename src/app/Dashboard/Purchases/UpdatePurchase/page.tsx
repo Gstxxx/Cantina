@@ -1,8 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { submit as updatePurchase } from './update';
-import { submit as fetchProducts } from '../../products/ListProducts/fetch';
-import { submit as searchProducts } from '../../products/ListProducts/search';
+import { submit as fetchProducts } from '../../Products/ListProducts/fetch';
+import { submit as searchProducts } from '../../Products/ListProducts/search';
 import { PurchaseRecord, Product } from 'app/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
