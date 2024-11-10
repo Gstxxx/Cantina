@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2Icon,Edit2Icon } from "lucide-react";
 import { submit as submitDeletePurchase } from './delete';
-import  UpdatePurchaseModal from '../UpdatePurchase/UpdatePurchaseModal';
+import { submit as submitSearchPurchase } from './search';
+import  PurchaseModal from '../UpdatePurchase/page';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export async function action(formData: FormData) {
@@ -52,10 +53,10 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
         try {
-            const response = await fetch(`/api/purchases/search?query=${query}`);
-            if (response.ok) {
-                const data: PurchaseRecord[] = await response.json();
-                setFilteredPurchases(data);
+            const result = await submitSearchPurchase(query);
+            if (result.ok) {
+                const purchases = await result.json();
+                setFilteredPurchases(purchases);
             } else {
                 setError('Failed to fetch search results.');
             }
@@ -115,18 +116,9 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
                 </Table>
             </ScrollArea>
             {editingPurchase && (
-                <UpdatePurchaseModal 
-                    purchase={editingPurchase}
+                <PurchaseModal 
+                    purchaseId={editingPurchase.id}
                     onClose={() => setEditingPurchase(null)}
-                    onUpdate={async (updatedPurchase: PurchaseRecord) => {
-                        setFilteredPurchases(prevPurchases => 
-                            prevPurchases.map(p => 
-                                p.id === updatedPurchase.id 
-                                    ? { ...p, ...updatedPurchase }
-                                    : p
-                            )
-                        );
-                    }}
                 />
             )}
         </div>

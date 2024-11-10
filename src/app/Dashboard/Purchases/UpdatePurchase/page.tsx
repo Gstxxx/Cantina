@@ -1,31 +1,52 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fetch';
+import {  getToken } from "lib/apiService";
 import { submit as updatePurchase } from './update';
-import { submit as fetchProducts } from '../../Products/ListProducts/fetch';
-import { submit as searchProducts } from '../../Products/ListProducts/search';
-import { PurchaseRecord, Product } from 'app/types';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, MinusIcon, PlusIcon } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
 
-type CartItem = Product & {
+import { TrashIcon } from "@radix-ui/react-icons"
+
+type Product = {
+    id: number;
+    name: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    price: number;
+};
+
+type PurchaseProduct = {
+    product: Product;
     quantity: number;
 };
 
-const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
+
+type PurchaseDetails = {
+    id: number;
+    client: {
+        id: number;
+        name: string;
+    };
+    products: PurchaseProduct[];
+};
+
+type CartItem = {
+    productId: number;
+    quantity: number;
+};
+
+interface PurchaseModalProps {
+    purchaseId: number;
+    onClose: () => void;
+}
+
+const UpdatePurchase: React.FC<PurchaseModalProps> = ({ purchaseId, onClose }) => {
     const [isModalOpen, setIsModalOpen] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [cart, setCart] = useState<CartItem[]>(purchase.products.map(p => ({
-        ...p.product,
-        quantity: p.quantity
-    })));
+    const [cart, setCart] = useState<CartItem[]>([]);
     const [productSearchTerm, setProductSearchTerm] = useState('');
-    const { toast } = useToast();
+    const [purchaseDetails, setPurchaseDetails] = useState<PurchaseDetails | null>(null);
 
     useEffect(() => {
         async function loadInitialData() {
@@ -34,6 +55,49 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
 
         loadInitialData();
     }, []);
+
+    useEffect(() => {
+        async function loadPurchaseData() {
+            const token = getToken();
+            
+            if (!token) {
+                console.error('No authentication token found');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/purchases/search?query=${purchaseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const purchases = await response.json();
+                    if (Array.isArray(purchases) && purchases.length > 0) {
+                        const purchase = purchases[0];
+                        setPurchaseDetails(purchase);
+                        setCart(purchase.products.map((p: PurchaseProduct) => ({
+                            productId: p.product.id,
+                            quantity: p.quantity
+                        })));
+                    } else {
+                        console.error('Purchase not found');
+                    }
+                } else {
+                    console.error('Error fetching purchase details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        if (purchaseId) {
+            loadPurchaseData();
+        }
+    }, [purchaseId]);
 
     const loadProducts = async () => {
         const response = await fetchProducts();
@@ -46,147 +110,123 @@ const UpdatePurchaseModal = ({ purchase }: { purchase: PurchaseRecord }) => {
         }
     };
 
-    const addToCart = (product: Product) => {
-        setCart(prevCart => {
-            const existingItem = prevCart.find(item => item.id === product.id);
-            if (existingItem) {
-                return prevCart.map(item =>
-                    item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-                );
-            }
-            return [...prevCart, { ...product, quantity: 1 }];
-        });
+    const addToCart = (productId: number, quantity: number) => {
+        setCart([...cart, { productId, quantity }]);
     };
 
-    const updateQuantity = (id: number, quantity: number) => {
-        setCart(prevCart =>
-            prevCart.map(item =>
-                item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
-            ).filter(item => item.quantity > 0)
-        );
+    const removeFromCart = (productId: number) => {
+        setCart(cart.filter(item => item.productId !== productId));
+    };
+
+    const updateCartQuantity = (productId: number, quantity: number) => {
+        setCart(cart.map(item => item.productId === productId ? { ...item, quantity } : item));
     };
 
     const handleSubmit = async () => {
         if (cart.length > 0) {
             const purchaseData = {
-                id: purchase.id,
-                products: cart.map(item => ({
-                    productId: item.id,
-                    quantity: item.quantity
-                })),
+                id: purchaseId,
+                products: cart,
             };
 
             try {
                 await updatePurchase(purchaseData);
-                toast({
-                    title: "Success",
-                    description: "Compra atualizada com sucesso!",
-                });
+                alert('Compra atualizada com sucesso!');
+                setCart([]);
+                setIsModalOpen(false);
                 window.location.reload();
             } catch (error) {
                 console.error('Erro ao atualizar compra', error);
-                toast({
-                    title: "Error",
-                    description: "Erro ao atualizar compra",
-                    variant: "destructive"
-                });
             }
         } else {
-            toast({
-                title: "Warning",
-                description: "Adicione produtos ao carrinho.",
-            });
+            alert('Selecione um cliente e adicione produtos ao carrinho.');
         }
     };
 
-    const handleProductSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleProductSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const searchTerm = e.target.value.toLowerCase();
         setProductSearchTerm(searchTerm);
-        if (searchTerm) {
-            const response = await searchProducts(searchTerm);
-            if (response.ok) {
-                const data = await response.json();
-                if (Array.isArray(data)) {
-                    setFilteredProducts(data as Product[]);
-                } else {
-                    console.error('Unexpected data format for products:', data);
-                    setFilteredProducts([]);
-                }
-            } else {
-                console.error('Error searching products:', response);
-                setFilteredProducts([]);
-            }
-        } else {
-            setFilteredProducts(products);
-        }
+        setFilteredProducts(products.filter(product =>
+            (product.name.toLowerCase().includes(searchTerm) ||
+                product.id.toString().includes(searchTerm)) &&
+            product.deleted_at === null
+        ));
+    };
+
+    const handleClose = () => {
+        setIsModalOpen(false);
+        onClose();
     };
 
     if (!isModalOpen) return null;
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity / 100, 0);
-
     return (
-        <div className='modal fixed inset-0 rounded-lg bg-gray-100/50 border-transparent border-0 flex items-center justify-center z-50'>
-            <Card className="w-full max-w-4xl mx-auto bg-white text-gray-400 border-transparent border-0 rounded-lg shadow-md">
-                <CardHeader>
-                    <CardTitle className="text-4xl font-semibold text-orange-500">Atualizar Compra</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-6 ">
-                    <div className="space-y-4">
-                        <div>
-                            <Label className="text-2xl font-semibold text-orange-500">Pesquisar produto</Label>
-                            <Input
-                                id="product-search"
-                                placeholder="Pesquisar produto"
-                                className='bg-gray-100 text-gray-400 border-transparent border-0 rounded-lg p-4'
+        <div className="modal fixed inset-0 rounded-lg bg-gray-100/50 border-transparent border-0 flex items-center justify-center z-50">
+            <div className="rounded-lg bg-white border-transparent border-0 p-6 shadow-md w-[1000px]">
+                <h2 className="text-xl font-bold mb-4 text-orange-500">Atualizar Compra</h2>
+                <h3>{purchaseDetails?.client.name}</h3>
+                <h3>ID: {purchaseDetails?.id}</h3>
+
+                <div className='grid grid-cols-2 gap-8'>
+                    <div >
+                        <div className='mt-4 flex flex-col gap-2 mb-4'>
+                            <h3 className='text-gray-400 font-bold text-xl'>Pesquisar produto</h3>
+                            <input
+                                className='bg-gray-100 text-gray-400 w-full p-2 border-transparent border-0 rounded-md'
                                 value={productSearchTerm}
                                 onChange={handleProductSearch}
+                                placeholder="Pesquisar produto"
                             />
+                            <select multiple className='bg-gray-100 text-gray-400 w-full p-2 border-transparent border-0 rounded-md mb-4 h-[300px] overflow-y-auto' onChange={(e) => {
+                                const selectedOptions = Array.from(e.target.options)
+                                    .filter(option => option.selected)
+                                    .map(option => option.value);
+                                selectedOptions.forEach(id => addToCart(Number(id), 1));
+                            }}>
+                                {filteredProducts.map((product) => (
+                                    <option className='text-gray-400 hover:bg-orange-500 text-bold' key={product.id} value={product.id}>
+                                        {product.name} - R$ {(product.price / 100).toFixed(2)}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
-                        <ScrollArea className="h-[440px] border-transparent border-0 rounded-lg rounded-md p-4 overflow-auto bg-gray-100 text-gray-400 text-sm">
-                            {filteredProducts.map(product => (
-                                <div key={product.id} className="flex flex-col">
-                                    <div className="flex justify-between items-center py-2">
-                                        <span className='text-gray-400 border-transparent border-0 rounded-lg'>{product.name} - R$ {(product.price / 100).toFixed(2)}</span>
-                                        <a className='cursor-pointer' onClick={() => addToCart(product)}><PlusCircle size={20} className='text-green-500 hover:text-green-600' /></a>
-                                    </div>
-                                    <hr className="my-2 border-t border-gray-600 w-full" />
-                                </div>
-                            ))}
-                        </ScrollArea>
                     </div>
-                    <div>
-                        <h3 className="text-2xl font-semibold text-orange-500">Carrinho</h3>
-                        <ScrollArea className="h-[440px] rounded-md p-4 overflow-auto bg-gray-100 text-gray-400 text-sm border-transparent border-0 rounded-lg">
-                            {cart.map(item => (
-                                <div key={item.id} className="flex justify-between items-center py-2">
-                                    <span>{item.name} - R$ {(item.price / 100).toFixed(2)}</span>
-                                    <div className="flex items-center">
-                                        <a className='cursor-pointer' onClick={() => updateQuantity(item.id, item.quantity - 1)}><MinusIcon size={10} className='text-red-500 hover:text-red-600' /></a>
 
-                                        <Input
-                                            type="number"
-                                            value={item.quantity}
-                                            onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
-                                            className="w-16 mx-2 text-center bg-white text-gray-400 border-transparent border-0 rounded-lg p-2"
-                                        />
-                                        <a className='cursor-pointer' onClick={() => updateQuantity(item.id, item.quantity + 1)}><PlusIcon size={10} className='text-green-500 hover:text-green-600' /></a>
-
+                    <div >
+                        <h3 className='text-gray-400 font-bold text-xl'>Carrinho</h3>
+                        <div className='h-[700px] overflow-y-auto bg-gray-100 text-gray-400 rounded-md p-4 flex flex-col gap-4'>
+                            {cart.map((item: CartItem, index: number) => {
+                                const product = products.find((p: Product) => p.id === item.productId);
+                                return (
+                                    <div key={index} className='flex justify-between items-center bg-gray-600 rounded-md p-2'>
+                                        <span>{product?.name}</span>
+                                        <div className='flex items-center gap-2'>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="99"
+                                                value={item.quantity}
+                                                onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
+                                                className='bg-gray-100 text-gray-400 border-transparent border-0 rounded-md p-2 w-[50px]'
+                                            />
+                                            <button 
+                                                className='text-red-500 text-sm' 
+                                                onClick={() => removeFromCart(item.productId)}
+                                            >
+                                                <TrashIcon />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </ScrollArea>
+                                );
+                            })}
+                        </div>
                     </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                    <div className="text-xl font-bold">Total:  <span className='text-green-500'>R$ {total.toFixed(2)}</span></div>
-                    <div>
-                        <Button className="text-white mr-2 bg-green-500 hover:bg-green-600 p-4" onClick={handleSubmit}>Atualizar Compra</Button>
-                        <Button className='text-white bg-red-500 hover:bg-red-600 p-4' onClick={() => setIsModalOpen(false)}>Fechar</Button>
-                    </div>
-                </CardFooter>
-            </Card></div>
+                </div>
+                <button className='bg-orange-500 text-white p-4 rounded-md' onClick={handleSubmit}>Atualizar Compra</button>
+                <button className='bg-red-500 text-white p-4 rounded-md ml-4' onClick={handleClose}>Fechar</button>
+            </div>
+        </div>
     );
 };
 
-export default UpdatePurchaseModal;
+export default UpdatePurchase;

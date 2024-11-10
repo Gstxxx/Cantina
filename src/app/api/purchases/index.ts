@@ -355,18 +355,7 @@ const purchaseApp = new Hono()
             const purchases = await prisma.purchaseRecord.findMany({
                 where: {
                     deleted_at: null,
-                    OR: [
-                        { clientId: Number(query) },
-                        {
-                            products: {
-                                some: {
-                                    product: {
-                                        name: query,
-                                    },
-                                },
-                            }
-                        },
-                    ],
+                    id: Number(query)
                 },
                 include: {
                     client: true,
