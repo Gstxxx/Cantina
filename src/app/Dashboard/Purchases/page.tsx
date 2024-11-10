@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation'
 import { PurchaseRecord } from 'app/types'
 import { Card } from '@/components/card/card'
 import { ListPurchases } from "./ListPurchase/ListPurchase"
-import { Button } from "@/components/ui/button"
-import PurchaseModal from './CreatePurchase/page'
 import { submit } from './ListPurchase/fetchPaginate'
 import { submit as fetchData } from './ListPurchase/fetch'
 import { Card as UICard, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
