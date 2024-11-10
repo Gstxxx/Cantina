@@ -45,13 +45,13 @@ export const userMiddleware = createMiddleware<{
             email: user.email,
             password: user.password,
             type: user.type,
-            refreshToken: token.token,
+            name: user.name,
+            refreshTokens: [],
         };
         c.set("user", userAuth);
         await next();
-    } catch (err) {
-        if (err.name === 'JwtTokenExpired') {
-
+    } catch (err: unknown) {
+        if ((err as Error).name === 'JwtTokenExpired') {
             return c.json({ message: 'Token has expired, please log in again.' }, 401);
         } else {
             return c.json({ message: 'Unauthorized access.' }, 401);

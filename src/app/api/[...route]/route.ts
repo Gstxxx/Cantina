@@ -5,9 +5,6 @@ import { clientApp } from "../clients";
 import { productApp } from "../product/index";
 import { purchaseApp } from "../purchases/index";
 import { authApp } from "../auth/login";
-export const runtime = {
-    runtime: 'edge',
-};
 
 const mainApp = new Hono();
 

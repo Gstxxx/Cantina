@@ -15,30 +15,9 @@ const loginSchema = z.object({
     password: z.string().min(8, { message: "Senha deve ter ao menos 8 caracteres" }),
 });
 
-export async function action(formData: FormData) {
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
-
-    if (!email || !password) {
-        return { error: "Email e senha são obrigatórios." };
-    }
-
-    const result = await submitLoginForm({ email, password });
-
-    if (result.ok) {
-        const response = await result.json();
-        if ('token' in response && 'tokenRefresh' in response) {
-            setCookie("token", response.token);
-            setCookie("refreshToken", response.tokenRefresh);
-            return { success: true, redirectTo: "/dashboard" };
-        }
-        else {
-            console.log(response);
-            return { error: "Resposta inválida do servidor" };
-        }
-    } else {
-        return { error: "Email ou senha inválidos." };
-    }
+interface LoginFormInputs {
+    email: string;
+    password: string;
 }
 
 const LoginPage = () => {
@@ -49,11 +28,11 @@ const LoginPage = () => {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm({
+    } = useForm<LoginFormInputs>({
         resolver: zodResolver(loginSchema),
     });
 
-    const onSubmit = async (data) => {
+    const onSubmit = async (data: LoginFormInputs) => {
         setState({ ...state, error: null, isLoading: true });
         try {
             const result = await submitLoginForm(data);

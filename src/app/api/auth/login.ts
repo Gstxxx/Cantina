@@ -59,7 +59,8 @@ const authApp = new Hono()
 
             c.res.headers.append('Set-Cookie', `refreshToken=${tokenRefresh}; HttpOnly; Path=/; Max-Age=604800;`);
 
-            const { password: _, ...userWithoutPassword } = user;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { password: _password, ...userWithoutPassword } = user;
 
             return c.json({ token, tokenRefresh, user: userWithoutPassword }, 200);
         } catch (err) {

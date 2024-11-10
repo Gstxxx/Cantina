@@ -3,7 +3,6 @@ import { Client } from 'app/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -70,12 +69,11 @@ export default function ListUsers() {
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const [startDate, setStartDate] = React.useState<Date | undefined>(firstDayOfMonth);
-    const [endDate, setEndDate] = React.useState<Date | undefined>(lastDayOfMonth);
+    const [startDate] = React.useState<Date | undefined>(firstDayOfMonth);
+    const [endDate] = React.useState<Date | undefined>(lastDayOfMonth);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
     const [isCreateClientModalOpen, setIsCreateClientModalOpen] = useState(false);
 
     const fetchPDF = async (id: number) => {
@@ -184,7 +182,6 @@ export default function ListUsers() {
                     }));
                     setUsers(clientsWithPurchases as Client[]);
                     setTotalPages(data.totalPages);
-                    setTotalCount(data.totalCount);
                 } else {
                     setError("Failed to load users.");
                 }
@@ -253,12 +250,6 @@ export default function ListUsers() {
         });
     }, [users, searchTerm]);
 
-    const paginate = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-        fetchUsersData(pageNumber);
-        window.scrollTo(0, 0);
-    };
-
     const fetchSearchedUsersData = async (search: string) => {
         try {
             const response = await searchUsers(search);
@@ -272,7 +263,6 @@ export default function ListUsers() {
                     }));
                     setUsers(clientsWithPurchases as Client[]);
                     setTotalPages(1);
-                    setTotalCount(clientsWithPurchases.length);
                 } else {
                     setError("No clients found.");
                 }

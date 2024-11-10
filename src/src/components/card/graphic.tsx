@@ -2,11 +2,6 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BarChart, ResponsiveContainer, XAxis, YAxis, Bar, Tooltip, ReferenceLine, Label } from "recharts"
 
-import {
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from "@/components/ui/chart"
 interface GraphicProps {
     name: string;
     quantity: number;

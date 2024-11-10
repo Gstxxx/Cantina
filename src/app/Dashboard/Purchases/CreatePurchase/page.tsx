@@ -24,8 +24,6 @@ const PurchaseModal = () => {
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [selectedClient, setSelectedClient] = useState<number | null>(null);
     const [cart, setCart] = useState<{ productId: number; quantity: number }[]>([]);
-    const [currentPageClients, setCurrentPageClients] = useState(1);
-    const [currentPageProducts, setCurrentPageProducts] = useState(1);
     const [clientSearchTerm, setClientSearchTerm] = useState('');
     const [productSearchTerm, setProductSearchTerm] = useState('');
 
@@ -96,18 +94,6 @@ const PurchaseModal = () => {
         } else {
             alert('Selecione um cliente e adicione produtos ao carrinho.');
         }
-    };
-
-    const loadMoreClients = () => {
-        const nextPage = currentPageClients + 1;
-        setCurrentPageClients(nextPage);
-        loadClients(nextPage);
-    };
-
-    const loadMoreProducts = () => {
-        const nextPage = currentPageProducts + 1;
-        setCurrentPageProducts(nextPage);
-        loadProducts();
     };
 
     const handleClientSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

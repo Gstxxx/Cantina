@@ -63,7 +63,6 @@ export default function ListProducts() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [totalCount, setTotalCount] = useState(0);
     const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false); // State for modal visibility
 
     const fetchUsersData = async (page: number) => {
@@ -74,7 +73,6 @@ export default function ListProducts() {
                 if (Array.isArray(data.products) && data.products !== null) {
                     setProducts(data.products);
                     setTotalPages(data.totalPages);
-                    setTotalCount(data.totalCount);
                 } else {
                     setError("Failed to load products.");
                 }
@@ -134,12 +132,6 @@ export default function ListProducts() {
             return matchesSearch;
         });
     }, [products, searchTerm]);
-
-    const paginate = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-        fetchUsersData(pageNumber);
-        window.scrollTo(0, 0);
-    };
 
     return (
 

@@ -15,7 +15,6 @@ import 'react-date-range/dist/theme/default.css'
 import './range-date.css'
 import Pagination from '@/components/ui/Pagination'
 import { ptBR } from 'date-fns/locale'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import Loading from '@/components/ui/loading'
 import { ErrorAlert } from '@/components/ui/notify' // Import the ErrorAlert component
 
@@ -41,7 +40,7 @@ const PurchaseAnalysis = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(0)
 
-    const [isMobile, setIsMobile] = useState(false)
+    const [, setIsMobile] = useState(false)
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -50,66 +49,67 @@ const PurchaseAnalysis = () => {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    const fetchPaginatedData = async (page: number) => {
-        try {
-            if (!startDate || !endDate) {
-                setError('No purchases found for the selected period.')
-                return
-            }
-            const response = await submit({
-                page,
-                start: startDate.toISOString().split('T')[0],
-                end: endDate.toISOString().split('T')[0]
-            })
-
-            if (!response.ok) return
-
-            const data = await response.json()
-            if (!data) {
-                setError('No purchases found for the selected period.')
-            } else {
-                setPurchasesPaginated(data.PurchaseRecord)
-                setTotalPages(data.totalPages)
-            }
-        } catch (err) {
-            console.error(err)
-            setError('Failed to fetch purchase data')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchDataUnpaginated = async () => {
-        try {
-            if (!startDate || !endDate) {
-                setError('No purchases found for the selected period.')
-                return
-            }
-            const response = await fetchData({
-                start: startDate.toISOString().split('T')[0],
-                end: endDate.toISOString().split('T')[0]
-            })
-
-            if (!response.ok) {
-                router.push('/auth/login')
-                return
-            }
-
-            const data = await response.json()
-            if (!data) {
-                setError('No purchases found for the selected period.')
-            } else {
-                setPurchases(data)
-            }
-        } catch (err) {
-            console.error(err)
-            setError('Failed to fetch purchase data')
-        } finally {
-            setLoading(false)
-        }
-    }
 
     useEffect(() => {
+
+        const fetchPaginatedData = async (page: number) => {
+            try {
+                if (!startDate || !endDate) {
+                    setError('No purchases found for the selected period.')
+                    return
+                }
+                const response = await submit({
+                    page,
+                    start: startDate.toISOString().split('T')[0],
+                    end: endDate.toISOString().split('T')[0]
+                })
+
+                if (!response.ok) return
+
+                const data = await response.json()
+                if (!data) {
+                    setError('No purchases found for the selected period.')
+                } else {
+                    setPurchasesPaginated(data.PurchaseRecord)
+                    setTotalPages(data.totalPages)
+                }
+            } catch (err) {
+                console.error(err)
+                setError('Failed to fetch purchase data')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        const fetchDataUnpaginated = async () => {
+            try {
+                if (!startDate || !endDate) {
+                    setError('No purchases found for the selected period.')
+                    return
+                }
+                const response = await fetchData({
+                    start: startDate.toISOString().split('T')[0],
+                    end: endDate.toISOString().split('T')[0]
+                })
+
+                if (!response.ok) {
+                    router.push('/auth/login')
+                    return
+                }
+
+                const data = await response.json()
+                if (!data) {
+                    setError('No purchases found for the selected period.')
+                } else {
+                    setPurchases(data)
+                }
+            } catch (err) {
+                console.error(err)
+                setError('Failed to fetch purchase data')
+            } finally {
+                setLoading(false)
+            }
+        }
         const fetchDataWithDelay = async () => {
             setLoading(true)
             await new Promise(resolve => setTimeout(resolve, 500))
@@ -117,7 +117,7 @@ const PurchaseAnalysis = () => {
             await fetchDataUnpaginated()
         }
         fetchDataWithDelay()
-    }, [currentPage, startDate, endDate])
+    }, [currentPage, startDate, endDate, router])
 
     if (loading) return <Loading />
 
@@ -182,7 +182,13 @@ const PurchaseAnalysis = () => {
                 <DateRangePicker
                     className='rounded-lg bg-white shadow-md border-transparent border-0 w-full max-h-[650px] overflow-auto justify-center p-2 text-sm'
                     ranges={[selectionRange]}
-                    onChange={handleSelect}
+                    onChange={(data) =>{
+                      if(data.selection.startDate && data.selection.endDate){
+                        data.selection.startDate = new Date(data.selection.startDate)
+                        data.selection.endDate = new Date(data.selection.endDate)
+                        handleSelect({selection: {startDate: data.selection.startDate, endDate: data.selection.endDate}})
+                      }
+                    }}
                     rangeColors={['#eb7316']}
                     locale={ptBR}
                 />

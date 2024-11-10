@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2Icon,Edit2Icon } from "lucide-react";
 import { submit as submitDeletePurchase } from './delete';
-import UpdatePurchaseModal from '../UpdatePurchase/page';
+import  UpdatePurchaseModal from '../UpdatePurchase/UpdatePurchaseModal';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export async function action(formData: FormData) {
@@ -24,7 +24,7 @@ export async function action(formData: FormData) {
 }
 
 export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord[] }) {
-    const [error, setError] = useState<string | null>(null);
+    const [, setError] = useState<string | null>(null);
     const [editingPurchase, setEditingPurchase] = useState<PurchaseRecord | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [filteredPurchases, setFilteredPurchases] = useState<PurchaseRecord[]>(purchasesData);
@@ -59,7 +59,7 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
             } else {
                 setError('Failed to fetch search results.');
             }
-        } catch (error) {
+        } catch {
             setError('An error occurred while searching.');
         }
     };
@@ -115,7 +115,19 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
                 </Table>
             </ScrollArea>
             {editingPurchase && (
-                <UpdatePurchaseModal purchase={editingPurchase} />
+                <UpdatePurchaseModal 
+                    purchase={editingPurchase}
+                    onClose={() => setEditingPurchase(null)}
+                    onUpdate={async (updatedPurchase: PurchaseRecord) => {
+                        setFilteredPurchases(prevPurchases => 
+                            prevPurchases.map(p => 
+                                p.id === updatedPurchase.id 
+                                    ? { ...p, ...updatedPurchase }
+                                    : p
+                            )
+                        );
+                    }}
+                />
             )}
         </div>
     );
