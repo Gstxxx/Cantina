@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trash2Icon,Edit2Icon } from "lucide-react";
 import { submit as submitDeletePurchase } from './delete';
 import { submit as submitSearchPurchase } from './search';
-import  PurchaseModal from '../UpdatePurchase/page';
+import  UpdatePurchase from '../UpdatePurchase/UpdatePurchaseModal';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export async function action(formData: FormData) {
@@ -116,7 +116,7 @@ export function ListPurchases({ purchasesData }: { purchasesData: PurchaseRecord
                 </Table>
             </ScrollArea>
             {editingPurchase && (
-                <PurchaseModal 
+                <UpdatePurchase 
                     purchaseId={editingPurchase.id}
                     onClose={() => setEditingPurchase(null)}
                 />

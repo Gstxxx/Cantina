@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 import React, { useState, useEffect } from 'react';
 import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fetch';
 import {  getToken } from "lib/apiService";
@@ -40,7 +40,7 @@ interface PurchaseModalProps {
     onClose: () => void;
 }
 
-const UpdatePurchase: React.FC<PurchaseModalProps> = ({ purchaseId, onClose }) => {
+const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
     const [isModalOpen, setIsModalOpen] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -227,6 +227,6 @@ const UpdatePurchase: React.FC<PurchaseModalProps> = ({ purchaseId, onClose }) =
             </div>
         </div>
     );
-};
+}
 
 export default UpdatePurchase;
