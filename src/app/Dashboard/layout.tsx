@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter, usePathname } from 'next/navigation'
 import { getCookie, setCookie } from 'cookies-next'
 import { Toaster } from '@/components/ui/toaster';
-import PurchaseModal from '../Dashboard/Purchases/CreatePurchase/page';
+import PurchaseModal from './Purchases/CreatePurchase/CreatePurchaseModal';
 
 const navItems = [
     { name: 'Compras', href: '/Dashboard/Purchases', icon: ShoppingCart },

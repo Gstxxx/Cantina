@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { submit as submitCreateUser } from './create';
 import { useToast } from "@/hooks/use-toast"
+import { User, Phone, X } from 'lucide-react';
 
 export async function action(formData: FormData) {
     const intent = formData.get("intent");
@@ -46,36 +45,54 @@ const CreateClientModal = () => {
     if (!isModalOpen) return null;
 
     return (
-        <div className='modal fixed inset-0 rounded-lg bg-gray-100/50 border-transparent border-0 flex items-center justify-center z-50'>
-            <Card className='w-full max-w-lg mx-auto bg-white text-gray-400 border-transparent border-0 rounded-lg shadow-md'>
-                <CardHeader>
-                    <CardTitle className="text-4xl font-semibold text-orange-500">Criar Cliente</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className='space-y-4'>
-                        <div>
-                            <label className='text-orange-500'>Nome</label>
-                            <Input className='bg-gray-100 border-transparent border-0 p-4 active:border-orange-500 mt-4 mb-4' type="text" placeholder="Nome" name="name" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-white">Criar Cliente</h2>
+                    <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-gray-200">
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="flex items-center">
+                            <User className="text-gray-500 mr-2" />
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
                         </div>
-                        <div>
-                            <label className='text-orange-500'>Celular</label>
-                            <Input className='bg-gray-100 border-transparent border-0 p-4 active:border-orange-500 mt-4' type="text" placeholder="Celular" name="phone" onKeyPress={(e) => {
-                                const input = e.target as HTMLInputElement;
-                                const { value } = input;
-                                const maxLength = 15;
-                                const field = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})(\d+?)/, '$1');
-                                if (field.length >= maxLength) e.preventDefault();
-                                else input.value = field;
-                            }} />
+                        <Input className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400" type="text" placeholder="Nome" name="name" />
+
+                        <div className="flex items-center">
+                            <Phone className="text-gray-500 mr-2" />
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Celular</label>
                         </div>
+                        <Input className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400" type="text" placeholder="Celular" name="phone" onKeyPress={(e) => {
+                            const input = e.target as HTMLInputElement;
+                            const { value } = input;
+                            const maxLength = 15;
+                            const field = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').replace(/(-\d{4})(\d+?)/, '$1');
+                            if (field.length >= maxLength) e.preventDefault();
+                            else input.value = field;
+                        }} />
                         <input type="hidden" name="intent" value="Create-User" />
-                        <div className='flex justify-end gap-4'>
-                            <Button className='bg-green-500 text-white p-4 active:border-green-400 hover:bg-green-600' type='submit'>Criar</Button>
-                            <Button className='bg-red-500 text-white p-4 active:border-red-400 hover:bg-red-600' onClick={() => setIsModalOpen(false)}>Fechar</Button>
-                        </div>
                     </form>
-                </CardContent>
-            </Card>
+                </div>
+
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+                    <button
+                        onClick={() => setIsModalOpen(false)}
+                        className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        Fechar
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                        Criar
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

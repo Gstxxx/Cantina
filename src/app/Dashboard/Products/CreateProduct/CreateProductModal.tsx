@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { submit as submitCreateProduct } from './create';
 import { useToast } from "@/hooks/use-toast";
+import { Tag, DollarSign, X } from 'lucide-react';
 
 export async function action(formData: FormData) {
     const intent = formData.get("intent");
@@ -68,23 +68,33 @@ const CreateProductModal = () => {
     if (!isModalOpen) return null;
 
     return (
-        <div className='modal fixed inset-0 rounded-lg bg-gray-100/50 border-transparent border-0 flex items-center justify-center z-50'>
-            <Card className='w-full max-w-lg mx-auto bg-white text-gray-400 border-transparent border-0 rounded-lg shadow-md'>
-                <CardHeader>
-                    <CardTitle className="text-4xl font-semibold text-orange-500">Criar Produto</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className='space-y-4'>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-white">Criar Produto</h2>
+                    <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-gray-200">
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className='text-orange-500'>Nome</label>
-                            <Input className='bg-gray-100 border-transparent border-0 p-4 active:border-orange-500 mt-4 mb-4' type="text" placeholder="Nome" name="name" />
+                            <div className="flex items-center">
+                                <Tag className="text-gray-500 mr-2" />
+                                <label className="text-orange-500">Nome</label>
+                            </div>
+                            <Input className="bg-gray-100 border-transparent border-0 p-4 active:border-orange-500 mt-4 mb-4" type="text" placeholder="Nome" name="name" />
                         </div>
                         <div>
-                            <label className='text-orange-500'>Preço</label>
-                            <div className='relative'>
-                                <span className='absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500'>R$</span>
+                            <div className="flex items-center">
+                                <DollarSign className="text-gray-500 mr-2" />
+                                <label className="text-orange-500">Preço</label>
+                            </div>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500">R$</span>
                                 <Input
-                                    className='bg-gray-100 border-transparent border-0 p-4 pl-10 active:border-orange-500 mt-4'
+                                    className="bg-gray-100 border-transparent border-0 p-4 pl-10 active:border-orange-500 mt-4 text-orange-500"
                                     type="text"
                                     placeholder="Preço"
                                     name="price"
@@ -94,13 +104,13 @@ const CreateProductModal = () => {
                             </div>
                         </div>
                         <input type="hidden" name="intent" value="Create-Product" />
-                        <div className='flex justify-end gap-4'>
-                            <Button className='bg-green-500 text-white p-4 active:border-green-400 hover:bg-green-600' type='submit'>Criar</Button>
-                            <Button className='bg-red-500 text-white p-4 active:border-red-400 hover:bg-red-600' onClick={() => setIsModalOpen(false)}>Fechar</Button>
+                        <div className="flex justify-end gap-4">
+                            <Button className="bg-green-500 text-white p-4 active:border-green-400 hover:bg-green-600" type="submit">Criar</Button>
+                            <Button className="bg-red-500 text-white p-4 active:border-red-400 hover:bg-red-600" onClick={() => setIsModalOpen(false)}>Fechar</Button>
                         </div>
                     </form>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };

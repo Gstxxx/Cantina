@@ -1,8 +1,9 @@
 'use client'
 import React, { useState, useEffect } from 'react';
+import { submit as createPurchase } from './Create';
 import { submit as fetchProducts } from 'app/Dashboard/Products/ListProducts/fetch';
-import {  getToken } from "lib/apiService";
-import { submit as updatePurchase } from './update';
+import { submit as fetchUsers } from 'app/Dashboard/Clients/ListClients/fetch';
+import { Client } from 'app/types';
 import { Search, ShoppingCart, Trash2 } from 'lucide-react';
 
 type Product = {
@@ -14,89 +15,41 @@ type Product = {
     price: number;
 };
 
-type PurchaseProduct = {
-    product: Product;
-    quantity: number;
-};
-
-
-type PurchaseDetails = {
-    id: number;
-    client: {
-        id: number;
-        name: string;
-    };
-    products: PurchaseProduct[];
-};
-
-type CartItem = {
-    productId: number;
-    quantity: number;
-};
-
-interface PurchaseModalProps {
-    purchaseId: number;
-    onClose: () => void;
-}
-
-const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
+const PurchaseModal = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
+    const [clients, setClients] = useState<Client[]>([]);
+    const [filteredClients, setFilteredClients] = useState<Client[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-    const [cart, setCart] = useState<CartItem[]>([]);
+    const [selectedClient, setSelectedClient] = useState<number | null>(null);
+    const [cart, setCart] = useState<{ productId: number; quantity: number }[]>([]);
+    const [clientSearchTerm, setClientSearchTerm] = useState('');
     const [productSearchTerm, setProductSearchTerm] = useState('');
-    const [purchaseDetails, setPurchaseDetails] = useState<PurchaseDetails | null>(null);
 
     useEffect(() => {
         async function loadInitialData() {
+            await loadClients();
             await loadProducts();
         }
-
         loadInitialData();
     }, []);
 
-    useEffect(() => {
-        async function loadPurchaseData() {
-            const token = getToken();
-            
-            if (!token) {
-                console.error('No authentication token found');
-                return;
+    const loadClients = async (page = 1) => {
+        const response = await fetchUsers(page);
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data.clients) && data.clients !== null) {
+                const clientsWithPurchases = data.clients.map(client => ({
+                    ...client,
+                    purchases: client.purchases || []
+                }));
+                setClients(clientsWithPurchases as Client[]);
+                setFilteredClients(clientsWithPurchases as Client[]);
             }
-
-            try {
-                const response = await fetch(`/api/purchases/search?query=${purchaseId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const purchases = await response.json();
-                    if (Array.isArray(purchases) && purchases.length > 0) {
-                        const purchase = purchases[0];
-                        setPurchaseDetails(purchase);
-                        setCart(purchase.products.map((p: PurchaseProduct) => ({
-                            productId: p.product.id,
-                            quantity: p.quantity
-                        })));
-                    } else {
-                        console.error('Purchase not found');
-                    }
-                } else {
-                    console.error('Error fetching purchase details');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
+        } else {
+            console.error('Error fetching clients:', Response.json);
         }
-        
-        if (purchaseId) {
-            loadPurchaseData();
-        }
-    }, [purchaseId]);
+    };
 
     const loadProducts = async () => {
         const response = await fetchProducts();
@@ -109,8 +62,10 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
         }
     };
 
-    const addToCart = (productId: number, quantity: number) => {
-        setCart([...cart, { productId, quantity }]);
+    const addToCart = (productId: number) => {
+        if (!cart.some(item => item.productId === productId)) {
+            setCart([...cart, { productId, quantity: 1 }]);
+        }
     };
 
     const removeFromCart = (productId: number) => {
@@ -118,75 +73,93 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
     };
 
     const updateCartQuantity = (productId: number, quantity: number) => {
-        setCart(cart.map(item => item.productId === productId ? { ...item, quantity } : item));
+        if (quantity > 0 && quantity <= 99) {
+            setCart(cart.map(item => 
+                item.productId === productId ? { ...item, quantity } : item
+            ));
+        }
     };
 
     const handleSubmit = async () => {
-        if (cart.length > 0) {
+        if (selectedClient && cart.length > 0) {
             const purchaseData = {
-                id: purchaseId,
+                clientId: selectedClient,
                 products: cart,
             };
 
             try {
-                await updatePurchase(purchaseData);
-                alert('Compra atualizada com sucesso!');
+                await createPurchase(purchaseData);
+                alert('Compra criada com sucesso!');
                 setCart([]);
                 setIsModalOpen(false);
-                window.location.reload();
             } catch (error) {
-                console.error('Erro ao atualizar compra', error);
+                console.error('Erro ao criar compra', error);
             }
         } else {
             alert('Selecione um cliente e adicione produtos ao carrinho.');
         }
     };
 
-    const handleProductSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const searchTerm = e.target.value.toLowerCase();
-        setProductSearchTerm(searchTerm);
-        setFilteredProducts(products.filter(product =>
-            (product.name.toLowerCase().includes(searchTerm) ||
-                product.id.toString().includes(searchTerm)) &&
-            product.deleted_at === null
-        ));
-    };
-
-    const handleClose = () => {
-        setIsModalOpen(false);
-        onClose();
-    };
-
     if (!isModalOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="min-h-screen p-4 flex items-center justify-center">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl overflow-hidden">
                 <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
-                    <h2 className="text-xl font-semibold text-white">
-                        Atualizar Compra
-                        
-                    </h2>
+                    <h2 className="text-xl font-semibold text-white">Criar Compra</h2>
                 </div>
 
                 <div className="p-6 grid grid-cols-2 gap-6">
                     <div className="space-y-6">
                         <div>
-                            <div className='mb-4'>
-
-                        {purchaseDetails && (
-                            <span className="text-xl font-bold text-orange-600">
-                                {purchaseDetails.client.name} - #{purchaseDetails.id}
-                            </span>
-                        )}
+                            <h3 className="text-lg font-medium text-gray-600 mb-2">Cliente</h3>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Pesquisar cliente"
+                                    value={clientSearchTerm}
+                                    onChange={(e) => {
+                                        setClientSearchTerm(e.target.value);
+                                        setFilteredClients(
+                                            clients.filter(client => 
+                                                client.name.toLowerCase().includes(e.target.value.toLowerCase())
+                                            )
+                                        );
+                                    }}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                />
+                                <Search className="absolute right-3 top-2.5 text-gray-400 h-5 w-5" />
+                            </div>
+                            <select
+                                className="mt-2 w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                value={selectedClient || ''}
+                                onChange={(e) => setSelectedClient(Number(e.target.value))}
+                            >
+                                <option value="">Selecione um cliente</option>
+                                {filteredClients.map((client) => (
+                                    <option key={client.id} value={client.id}>
+                                        {client.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
+
+                        <div>
                             <h3 className="text-lg font-medium text-gray-600 mb-2">Pesquisar produto</h3>
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Pesquisar produto"
                                     value={productSearchTerm}
-                                    onChange={handleProductSearch}
+                                    onChange={(e) => {
+                                        setProductSearchTerm(e.target.value);
+                                        setFilteredProducts(
+                                            products.filter(product =>
+                                                product.name.toLowerCase().includes(e.target.value.toLowerCase()) &&
+                                                product.deleted_at === null
+                                            )
+                                        );
+                                    }}
                                     className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 />
                                 <Search className="absolute right-3 top-2.5 text-gray-400 h-5 w-5" />
@@ -195,7 +168,7 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
                                 {filteredProducts.map((product) => (
                                     <button
                                         key={product.id}
-                                        onClick={() => addToCart(product.id, 1)}
+                                        onClick={() => addToCart(product.id)}
                                         className="w-full px-4 py-2 text-left hover:bg-orange-50 flex justify-between items-center border-b border-gray-100 last:border-0"
                                     >
                                         <span className="text-gray-700">{product.name}</span>
@@ -208,6 +181,7 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
                         </div>
                     </div>
 
+                    {/* Right Column */}
                     <div>
                         <h3 className="text-lg font-medium text-gray-600 mb-2 flex items-center gap-2">
                             <ShoppingCart className="h-5 w-5 text-orange-500" />
@@ -236,7 +210,7 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
                                                         max="99"
                                                         value={item.quantity}
                                                         onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
-                                                        className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent text-orange-500"
+                                                        className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                                     />
                                                     <button
                                                         onClick={() => removeFromCart(item.productId)}
@@ -254,9 +228,10 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
                     </div>
                 </div>
 
+                {/* Footer */}
                 <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
                     <button
-                        onClick={handleClose}
+                        onClick={() => setIsModalOpen(false)}
                         className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         Fechar
@@ -265,12 +240,12 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
                         onClick={handleSubmit}
                         className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                     >
-                        Atualizar Compra
+                        Criar Compra
                     </button>
                 </div>
             </div>
         </div>
     );
-}
+};
 
-export default UpdatePurchase;
+export default PurchaseModal;
