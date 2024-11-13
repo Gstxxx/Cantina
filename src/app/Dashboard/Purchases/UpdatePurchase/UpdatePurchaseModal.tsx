@@ -110,7 +110,16 @@ const UpdatePurchase = ({ purchaseId, onClose }: PurchaseModalProps) => {
     };
 
     const addToCart = (productId: number, quantity: number) => {
-        setCart([...cart, { productId, quantity }]);
+        setCart((prevCart) => {
+            const existingItem = prevCart.find(item => item.productId === productId);
+            if (existingItem) {
+                return prevCart.map(item =>
+                    item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item
+                );
+            } else {
+                return [...prevCart, { productId, quantity }];
+            }
+        });
     };
 
     const removeFromCart = (productId: number) => {

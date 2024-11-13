@@ -63,9 +63,16 @@ const PurchaseModal = () => {
     };
 
     const addToCart = (productId: number) => {
-        if (!cart.some(item => item.productId === productId)) {
-            setCart([...cart, { productId, quantity: 1 }]);
-        }
+        setCart((prevCart) => {
+            const existingItem = prevCart.find(item => item.productId === productId);
+            if (existingItem) {
+                return prevCart.map(item => 
+                    item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item
+                );
+            } else {
+                return [...prevCart, { productId, quantity: 1 }];
+            }
+        });
     };
 
     const removeFromCart = (productId: number) => {
@@ -126,12 +133,12 @@ const PurchaseModal = () => {
                                             )
                                         );
                                     }}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    className="text-orange-500 w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 />
                                 <Search className="absolute right-3 top-2.5 text-gray-400 h-5 w-5" />
                             </div>
                             <select
-                                className="mt-2 w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="text-gray-400 mt-2 w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                 value={selectedClient || ''}
                                 onChange={(e) => setSelectedClient(Number(e.target.value))}
                             >
@@ -210,7 +217,7 @@ const PurchaseModal = () => {
                                                         max="99"
                                                         value={item.quantity}
                                                         onChange={(e) => updateCartQuantity(item.productId, Number(e.target.value))}
-                                                        className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                        className="w-16 px-2 py-1 bg-gray-50 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent text-orange-500"
                                                     />
                                                     <button
                                                         onClick={() => removeFromCart(item.productId)}
