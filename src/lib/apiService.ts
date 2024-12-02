@@ -12,7 +12,8 @@ export function getToken() {
 
 export function getApiClient() {
     const token = getToken();
-    return hc<AppType>("http://localhost:3000/", {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    return hc<AppType>(baseUrl, {
         headers: token && typeof token === 'string' ? {
             Authorization: `Bearer ${token}`,
         } : {},
