@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import { prisma } from 'lib/prisma';
-import { faker } from '@faker-js/faker';
+// import { faker } from '@faker-js/faker';
 
 export async function seed() {
     const hashedPassword = await bcrypt.hash('sandra0714', 10);
