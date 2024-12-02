@@ -9,6 +9,7 @@
     "lint": "next lint --fix",
     "migrate": "npx prisma migrate dev --name init",
     "studio": "npx prisma studio",
+    "database:create": "npx prisma migrate dev --name init && npx prisma generate && npm run build",
     "generate": "npx prisma generate",
     "seed": "npx -y tsx src/lib/seed.ts"
   },
