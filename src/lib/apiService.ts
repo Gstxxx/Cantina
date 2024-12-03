@@ -12,7 +12,7 @@ export function getToken() {
 
 export function getApiClient() {
     const token = getToken();
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const baseUrl = 'http://mkgwss8o0so8kgwwsswk0okw.89.117.32.118.sslip.io';
     return hc<AppType>(baseUrl, {
         headers: token && typeof token === 'string' ? {
             Authorization: `Bearer ${token}`,
