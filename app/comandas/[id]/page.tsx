@@ -133,6 +133,7 @@ export default function ComandaDetailPage({
       const payload: any = {};
       
       if (closeType === "PAID") {
+        payload.isOnCredit = false;
         payload.paidType = paymentType;
         payload.paidCents = order?.totalCents;
       } else {

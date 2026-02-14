@@ -6,6 +6,7 @@ const paymentTypeSchema = z.enum(["CASH", "PIX", "DEBIT", "CREDIT", "TRANSFER", 
 
 export const createOrderSchema = z.object({
   tableId: cuidSchema.optional().nullable(),
+  tableName: z.string().max(100).optional().nullable(),
   customerId: cuidSchema.optional().nullable(),
   channel: saleChannelSchema.optional().default("COUNTER"),
   notes: z.string().max(500).optional().nullable(),

@@ -25,6 +25,8 @@ export default function FiadoPage() {
   const [loading, setLoading] = useState(true);
   const [showDrawer, setShowDrawer] = useState(false);
   const [formData, setFormData] = useState({ name: "", phone: "" });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState<"ALL" | "WITH_DEBT" | "PAID">("ALL");
 
   useEffect(() => {
     if (tenantId) {
@@ -38,7 +40,7 @@ export default function FiadoPage() {
     try {
       const data = await apiRequest<Customer[]>(
         `/api/tenants/${tenantId}/customers`,
-        { tenantId }
+        { tenantId },
       );
 
       // Load balance for each customer
@@ -47,13 +49,13 @@ export default function FiadoPage() {
           try {
             const balance = await apiRequest<{ balanceCents: number }>(
               `/api/tenants/${tenantId}/customers/${customer.id}/balance`,
-              { tenantId }
+              { tenantId },
             );
             return { ...customer, balance: balance.balanceCents };
           } catch {
             return { ...customer, balance: 0 };
           }
-        })
+        }),
       );
 
       // Sort by balance (highest first)
@@ -73,14 +75,11 @@ export default function FiadoPage() {
     }
 
     try {
-      await apiRequest(
-        `/api/tenants/${tenantId}/customers`,
-        {
-          method: "POST",
-          body: JSON.stringify(formData),
-          tenantId,
-        }
-      );
+      await apiRequest(`/api/tenants/${tenantId}/customers`, {
+        method: "POST",
+        body: JSON.stringify(formData),
+        tenantId,
+      });
       setShowDrawer(false);
       setFormData({ name: "", phone: "" });
       loadCustomers();
@@ -89,6 +88,23 @@ export default function FiadoPage() {
       alert("Erro ao criar cliente");
     }
   };
+
+  // Filter and search customers
+  const filteredCustomers = customers.filter((customer) => {
+    // Search filter
+    const matchesSearch = searchTerm === "" || 
+      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (customer.phone && customer.phone.includes(searchTerm));
+
+    // Balance filter
+    const balance = customer.balance || 0;
+    const matchesFilter = 
+      filter === "ALL" ||
+      (filter === "WITH_DEBT" && balance > 0) ||
+      (filter === "PAID" && balance <= 0);
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <MobileLayout>
@@ -100,34 +116,75 @@ export default function FiadoPage() {
           <Button onClick={() => setShowDrawer(true)}>+ Cliente</Button>
         </div>
 
+        {/* Search */}
+        <div className="mb-4">
+          <Input
+            placeholder="🔍 Buscar por nome ou telefone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex gap-2 mb-4">
+          <Button
+            size="sm"
+            variant={filter === "ALL" ? "primary" : "secondary"}
+            onClick={() => setFilter("ALL")}
+          >
+            Todos
+          </Button>
+          <Button
+            size="sm"
+            variant={filter === "WITH_DEBT" ? "primary" : "secondary"}
+            onClick={() => setFilter("WITH_DEBT")}
+          >
+            Com Débito
+          </Button>
+          <Button
+            size="sm"
+            variant={filter === "PAID" ? "primary" : "secondary"}
+            onClick={() => setFilter("PAID")}
+          >
+            Sem Débito
+          </Button>
+        </div>
+
         {loading ? (
           <div className="text-center py-8 text-[var(--text-muted)]">
             Carregando...
           </div>
-        ) : customers.length === 0 ? (
+        ) : filteredCustomers.length === 0 ? (
           <div className="text-center py-8 text-[var(--text-muted)]">
-            Nenhum cliente cadastrado
+            {searchTerm || filter !== "ALL" 
+              ? "Nenhum cliente encontrado com os filtros aplicados"
+              : "Nenhum cliente cadastrado"}
           </div>
         ) : (
-          <div className="space-y-3">
-            {customers.map((customer) => (
-              <Link key={customer.id} href={`/fiado/${customer.id}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-[var(--text-primary)]">
-                        {customer.name}
-                      </h3>
-                      {customer.phone && (
-                        <p className="text-sm text-[var(--text-tertiary)]">
-                          {customer.phone}
-                        </p>
-                      )}
+          <div>
+            {filteredCustomers.map((customer, idx) => (
+              <div
+                key={customer.id}
+                className={idx !== filteredCustomers.length - 1 ? "mb-3" : ""}
+              >
+                <Link href={`/fiado/${customer.id}`}>
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg text-[var(--text-primary)]">
+                          {customer.name}
+                        </h3>
+                        {customer.phone && (
+                          <p className="text-sm text-[var(--text-tertiary)]">
+                            {customer.phone}
+                          </p>
+                        )}
+                      </div>
+                      <FiadoBadge balanceCents={customer.balance || 0} />
                     </div>
-                    <FiadoBadge balanceCents={customer.balance || 0} />
-                  </div>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
+              </div>
             ))}
           </div>
         )}
@@ -149,7 +206,9 @@ export default function FiadoPage() {
           <Input
             label="Telefone (opcional)"
             value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, phone: e.target.value })
+            }
             placeholder="(00) 00000-0000"
           />
 

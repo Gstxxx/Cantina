@@ -56,11 +56,38 @@ export async function POST(
       const msg = data.error.issues.map((e) => e.message).join("; ") || "Validation failed";
       throw badRequest(msg);
     }
+
+    // Handle tableName - find or create table
+    let tableId = data.data.tableId ?? undefined;
+    if (data.data.tableName && !tableId) {
+      // Try to find existing table
+      let table = await prisma.table.findFirst({
+        where: {
+          tenantId,
+          unitId,
+          name: data.data.tableName,
+        },
+      });
+
+      // If not found, create it
+      if (!table) {
+        table = await prisma.table.create({
+          data: {
+            tenantId,
+            unitId,
+            name: data.data.tableName,
+          },
+        });
+      }
+
+      tableId = table.id;
+    }
+
     const order = await prisma.order.create({
       data: {
         tenantId,
         unitId,
-        tableId: data.data.tableId ?? undefined,
+        tableId,
         customerId: data.data.customerId ?? undefined,
         channel: data.data.channel,
         notes: data.data.notes ?? undefined,

@@ -4,6 +4,26 @@ import { handleApi, json, requireTenantId } from "@/lib/api";
 import { badRequest, notFound } from "@/lib/errors";
 import { updateCustomerSchema, cuidSchema } from "@/lib/validations";
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ tenantId: string; id: string }> }
+) {
+  return handleApi(async () => {
+    const { tenantId, id } = await params;
+    const tid = requireTenantId(request);
+    if (tid !== tenantId) throw badRequest("Tenant mismatch");
+    const idResult = cuidSchema.safeParse(id);
+    if (!idResult.success) throw badRequest("Invalid customer id");
+    
+    const customer = await prisma.customer.findFirst({
+      where: { id, tenantId },
+    });
+    
+    if (!customer) throw notFound("Customer not found");
+    return json(customer);
+  });
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ tenantId: string; id: string }> }

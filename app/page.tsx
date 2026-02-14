@@ -40,11 +40,11 @@ export default function Home() {
   const loadStats = async () => {
     if (!tenantId || !unitId) return;
     setLoading(true);
-    
+
     try {
       const orders = await apiRequest<any[]>(
         `/api/tenants/${tenantId}/units/${unitId}/orders`,
-        { tenantId, unitId }
+        { tenantId, unitId },
       );
 
       const today = new Date().toISOString().split("T")[0];
@@ -114,22 +114,28 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="space-y-3 animate-fadeIn">
+            <div className="space-y-3 animate-fadeIn gap-4">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Ações Rápidas
               </h2>
-              
+
               <Link href="/comandas">
                 <Button className="w-full" size="lg">
                   🍽️ Ver Comandas
                 </Button>
               </Link>
 
+              {/* Added spacing */}
+              <div className="h-2" />
+
               <Link href="/vendas/nova">
                 <Button className="w-full" size="lg" variant="secondary">
                   ➕ Lançar Venda Rápida
                 </Button>
               </Link>
+
+              {/* Added spacing */}
+              <div className="h-2" />
 
               <Link href="/fiado">
                 <Button className="w-full" size="lg" variant="secondary">
