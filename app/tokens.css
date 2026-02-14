@@ -1,0 +1,102 @@
+:root {
+  /* Surfaces */
+  --surface-base: #F7F5F0;
+  --surface-raised: #E8E1D4;
+  --surface-overlay: #FFFFFF;
+  
+  /* Foreground */
+  --text-primary: #5A3E2B;
+  --text-secondary: #6B7B4F;
+  --text-tertiary: #8B9B6F;
+  --text-muted: #A0A89B;
+  
+  /* Borders */
+  --border-soft: rgba(91, 62, 43, 0.12);
+  --border-standard: rgba(91, 62, 43, 0.20);
+  --border-emphasis: rgba(78, 91, 54, 0.40);
+  
+  /* Brand */
+  --brand-primary: #6B7B4F;
+  --brand-hover: #4E5B36;
+  --brand-active: #3E4A28;
+  
+  /* Semantic */
+  --success: #2F7D32;
+  --warning: #C8A951;
+  --error: #B24A3A;
+  --info: #3E6B73;
+  
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(91, 62, 43, 0.08);
+  --shadow-overlay: 0 4px 12px rgba(91, 62, 43, 0.12);
+  
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Font sizes */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Z-index */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+}
+
+@theme inline {
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  
+  --color-border-soft: var(--border-soft);
+  --color-border-standard: var(--border-standard);
+  --color-border-emphasis: var(--border-emphasis);
+  
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+}

@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
-  title: "Cantina da Mamãe - SaaS",
-  description: "Projeto da cantina da minha mãe em forma de SaaS",
+  title: "Sandra Café & Cozinha",
+  description: "Sistema de gestão para Cantina Sandra Café & Cozinha",
 };
 
 export default function RootLayout({
@@ -24,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={inter.variable}>
         {children}
       </body>
     </html>
