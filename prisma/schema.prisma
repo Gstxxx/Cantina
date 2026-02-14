@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+  CANCELED
+}
+
+enum PaymentType {
+  CASH
+  PIX
+  DEBIT
+  CREDIT
+  TRANSFER
+  OTHER
+}
+
+enum SaleChannel {
+  COUNTER
+  TABLE
+  DELIVERY
+  TAKEOUT
+  OTHER
+}
+
+enum LedgerType {
+  CHARGE
+  PAYMENT
+  ADJUST
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  units             Unit[]
+  customers         Customer[]
+  products          Product[]
+  users             User[]
+  productCategories ProductCategory[]
+  tables            Table[]
+  orders            Order[]
+  ledgerEntries     LedgerEntry[]
+  cashDays          CashDay[]
+}
+
+model Unit {
+  id       String  @id @default(cuid())
+  tenantId String
+  name     String
+  address  String?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users         User[]
+  orders        Order[]
+  cashDays      CashDay[]
+  tables        Table[]
+  ledgerEntries LedgerEntry[]
+}
+
+model User {
+  id       String  @id @default(cuid())
+  tenantId String
+  unitId   String?
+  name     String
+  email    String? @unique
+  pinHash  String?
+  role     String  @default("STAFF")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unit   Unit?  @relation(fields: [unitId], references: [id], onDelete: SetNull)
+
+  ordersCreated Order[]       @relation("orders_created_by")
+  ordersUpdated Order[]       @relation("orders_updated_by")
+  ledgerEntries LedgerEntry[] @relation("ledger_created_by")
+}
+
+model Customer {
+  id       String  @id @default(cuid())
+  tenantId String
+  name     String
+  phone    String?
+  notes    String?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  orders Order[]
+  ledger LedgerEntry[]
+
+  @@index([tenantId, name])
+  @@index([tenantId, phone])
+}
+
+model ProductCategory {
+  id       String  @id @default(cuid())
+  tenantId String
+  name     String
+  sort     Int     @default(0)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@unique([tenantId, name])
+}
+
+model Product {
+  id         String  @id @default(cuid())
+  tenantId   String
+  categoryId String?
+  name       String
+  priceCents Int
+  isActive   Boolean @default(true)
+  costCents  Int?
+  sku        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  category ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, name])
+}
+
+model Table {
+  id       String  @id @default(cuid())
+  tenantId String
+  unitId   String
+  name     String
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([unitId, name])
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  tenantId   String
+  unitId     String
+  tableId    String?
+  customerId String?
+  status     OrderStatus @default(OPEN)
+
+  channel SaleChannel @default(COUNTER)
+  notes   String?
+
+  openedAt DateTime  @default(now())
+  closedAt DateTime?
+
+  subtotalCents Int @default(0)
+  discountCents Int @default(0)
+  totalCents    Int @default(0)
+
+  paidType   PaymentType?
+  paidCents  Int?
+  isOnCredit Boolean      @default(false)
+
+  createdById String?
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unit     Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  table    Table?    @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  items      OrderItem[]
+  ledgerLink LedgerEntry?
+
+  createdBy User? @relation("orders_created_by", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("orders_updated_by", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([unitId, openedAt])
+  @@index([unitId, status])
+  @@index([tenantId, customerId])
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  productId  String
+  qty        Int    @default(1)
+  priceCents Int
+  totalCents Int
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model LedgerEntry {
+  id          String     @id @default(cuid())
+  tenantId    String
+  customerId  String
+  unitId      String?
+  orderId     String?    @unique
+  type        LedgerType
+  amountCents Int
+  description String?
+  occurredAt  DateTime   @default(now())
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  unit     Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  order    Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdBy User? @relation("ledger_created_by", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([customerId, occurredAt])
+  @@index([tenantId, occurredAt])
+}
+
+model CashDay {
+  id       String   @id @default(cuid())
+  tenantId String
+  unitId   String
+  day      DateTime
+
+  incomeCents  Int @default(0)
+  expenseCents Int @default(0)
+  notes        String?
+
+  closedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  unit   Unit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, day])
+  @@index([tenantId, day])
+}
