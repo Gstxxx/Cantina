@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/api-client";
 import { useApp } from "@/lib/context/app-context";
+import { LoadingSpinner } from "@/components/ui/loading";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatCurrency } from "@/lib/format";
 import { Drawer } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -71,13 +73,15 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
         />
 
         {loading ? (
-          <div className="text-center py-8 text-[var(--text-muted)]">
-            Carregando...
+          <div className="py-8">
+            <LoadingSpinner />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-8 text-[var(--text-muted)]">
-            Nenhum produto encontrado
-          </div>
+          <EmptyState
+            icon="🔍"
+            title="Nenhum produto encontrado"
+            description="Tente buscar por outro nome"
+          />
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {filteredProducts.map((product) => (
@@ -90,6 +94,7 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                   border-2 border-[var(--border-soft)]
                   hover:border-[var(--brand-primary)]
                   transition-all active:scale-95
+                  animate-fadeIn
                 "
               >
                 <h4 className="font-medium text-[var(--text-primary)] mb-1">

@@ -2,6 +2,7 @@
 
 import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface OrderItem {
   id: string;
@@ -25,9 +26,11 @@ interface OrderItemListProps {
 export function OrderItemList({ items, onUpdateQty, onRemove, editable = false }: OrderItemListProps) {
   if (items.length === 0) {
     return (
-      <div className="text-center py-8 text-[var(--text-muted)]">
-        Nenhum item adicionado
-      </div>
+      <EmptyState
+        icon="🍽️"
+        title="Nenhum item adicionado"
+        description="Adicione produtos para começar"
+      />
     );
   }
 
@@ -36,7 +39,7 @@ export function OrderItemList({ items, onUpdateQty, onRemove, editable = false }
       {items.map((item) => (
         <div
           key={item.id}
-          className="flex items-start gap-3 p-3 bg-[var(--surface-raised)] rounded-lg border border-[var(--border-soft)]"
+          className="flex items-start gap-3 p-3 bg-[var(--surface-raised)] rounded-lg border border-[var(--border-soft)] animate-stamp"
         >
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-[var(--text-primary)]">

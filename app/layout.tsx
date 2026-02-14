@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Inter } from "next/font/google";
+import { AppProvider } from "@/lib/context/app-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,11 +10,6 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
-  title: "Sandra Café & Cozinha",
-  description: "Sistema de gestão para Cantina Sandra Café & Cozinha",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,8 +17,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt">
+      <head>
+        <title>Sandra Café & Cozinha</title>
+        <meta name="description" content="Sistema de gestão para Cantina Sandra Café & Cozinha" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+      </head>
       <body className={inter.variable}>
-        {children}
+        <AppProvider>
+          {children}
+        </AppProvider>
       </body>
     </html>
   );
