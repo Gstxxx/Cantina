@@ -20,18 +20,22 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const { tenantId, unitId, headers, ...fetchOptions } = options;
 
-  const requestHeaders: HeadersInit = {
+  const requestHeaders: Record<string, string> = {
     "Content-Type": "application/json",
-    ...headers,
   };
-
-  if (tenantId) {
-    requestHeaders["x-tenant-id"] = tenantId;
+  if (headers) {
+    if (headers instanceof Headers) {
+      headers.forEach((v, k) => {
+        requestHeaders[k] = v;
+      });
+    } else if (Array.isArray(headers)) {
+      for (const [k, v] of headers) requestHeaders[k] = v;
+    } else {
+      Object.assign(requestHeaders, headers as Record<string, string>);
+    }
   }
-
-  if (unitId) {
-    requestHeaders["x-unit-id"] = unitId;
-  }
+  if (tenantId) requestHeaders["x-tenant-id"] = tenantId;
+  if (unitId) requestHeaders["x-unit-id"] = unitId;
 
   const response = await fetch(path, {
     ...fetchOptions,

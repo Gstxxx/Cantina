@@ -138,6 +138,7 @@ export default function ClienteFiadoPage({
   };
 
   const addToCart = async (productId: string, priceCents: number) => {
+    if (!tenantId) return;
     // Fetch product name if we don't have it
     if (!productNames[productId]) {
       try {

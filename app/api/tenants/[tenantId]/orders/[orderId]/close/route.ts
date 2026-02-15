@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { handleApi, json, requireTenantId } from "@/lib/api";
 import { badRequest, notFound } from "@/lib/errors";
@@ -7,7 +8,7 @@ import { recalcOrderTotals } from "@/lib/order-totals";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ tenantId: string; orderId: string }> }
+  { params }: { params: Promise<{ tenantId: string; orderId: string }> },
 ) {
   return handleApi(async () => {
     const { tenantId, orderId } = await params;
@@ -18,7 +19,9 @@ export async function POST(
     const body = await request.json();
     const data = closeOrderSchema.safeParse(body);
     if (!data.success) {
-      const msg = data.error.issues.map((e) => e.message).join("; ") || "Validation failed";
+      const msg =
+        data.error.issues.map((e) => e.message).join("; ") ||
+        "Validation failed";
       throw badRequest(msg);
     }
     const order = await prisma.order.findFirst({
@@ -35,7 +38,8 @@ export async function POST(
     const totalCents = refreshed.totalCents;
     const closedAt = new Date();
     if (data.data.isOnCredit) {
-      if (!refreshed.customerId) throw badRequest("Customer required for credit (fiado)");
+      if (!refreshed.customerId)
+        throw badRequest("Customer required for credit (fiado)");
       await prisma.$transaction(async (tx) => {
         await tx.order.update({
           where: { id: orderId },
@@ -74,7 +78,11 @@ export async function POST(
     }
     const result = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: { include: { product: true } }, table: true, customer: true },
+      include: {
+        items: { include: { product: true } },
+        table: true,
+        customer: true,
+      },
     });
     return json(result!, 200);
   });
