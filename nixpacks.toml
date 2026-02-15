@@ -1,0 +1,4 @@
+# Pin nixpkgs archive so Node.js is 22.12+ (required by Prisma 7.4: ^20.19 || ^22.12 || >=24.0).
+# Coolify/Nixpacks default with NODE_VERSION=22 gives 22.11.0 which fails Prisma's preinstall.
+[phases.setup]
+nixpkgsArchive = "51ad838b03a05b1de6f9f2a0fffecee64a9788ee"
