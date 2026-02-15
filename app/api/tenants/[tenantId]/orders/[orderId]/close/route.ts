@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+
+type PrismaTx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 import { handleApi, json, requireTenantId } from "@/lib/api";
 import { badRequest, notFound } from "@/lib/errors";
 import { closeOrderSchema, cuidSchema } from "@/lib/validations";
@@ -40,7 +41,7 @@ export async function POST(
     if (data.data.isOnCredit) {
       if (!refreshed.customerId)
         throw badRequest("Customer required for credit (fiado)");
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: PrismaTx) => {
         await tx.order.update({
           where: { id: orderId },
           data: {
