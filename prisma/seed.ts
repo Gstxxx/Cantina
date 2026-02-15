@@ -34,8 +34,8 @@ async function main() {
     create: {
       id: "unit-1",
       tenantId: tenant.id,
-      name: "Unidade Centro",
-      address: "Rua Principal, 123",
+      name: "Unidade São João",
+      address: "Rua Dr. Altair Nogueira, 98, são João, VR",
     },
   });
 
@@ -45,8 +45,8 @@ async function main() {
     create: {
       id: "unit-2",
       tenantId: tenant.id,
-      name: "Unidade Shopping",
-      address: "Shopping Center, Loja 45",
+      name: "Unidade Konnen",
+      address: "R. São João, 73 - Centro, Volta Redonda - RJ",
     },
   });
   console.log("✅ Unidades criadas:", unidade1.name, "e", unidade2.name);
@@ -54,7 +54,9 @@ async function main() {
   // Criar categorias
   const categorias = await Promise.all([
     prisma.productCategory.upsert({
-      where: { tenantId_name: { tenantId: tenant.id, name: "Bebidas Quentes" } },
+      where: {
+        tenantId_name: { tenantId: tenant.id, name: "Bebidas Quentes" },
+      },
       update: {},
       create: {
         tenantId: tenant.id,
@@ -95,11 +97,19 @@ async function main() {
   // Criar produtos
   const produtos = [
     { name: "Café Expresso", priceCents: 400, categoryName: "Bebidas Quentes" },
-    { name: "Café com Leite", priceCents: 500, categoryName: "Bebidas Quentes" },
+    {
+      name: "Café com Leite",
+      priceCents: 500,
+      categoryName: "Bebidas Quentes",
+    },
     { name: "Cappuccino", priceCents: 700, categoryName: "Bebidas Quentes" },
     { name: "Chá", priceCents: 350, categoryName: "Bebidas Quentes" },
     { name: "Suco Natural", priceCents: 600, categoryName: "Bebidas Frias" },
-    { name: "Refrigerante Lata", priceCents: 500, categoryName: "Bebidas Frias" },
+    {
+      name: "Refrigerante Lata",
+      priceCents: 500,
+      categoryName: "Bebidas Frias",
+    },
     { name: "Água Mineral", priceCents: 300, categoryName: "Bebidas Frias" },
     { name: "Coxinha", priceCents: 600, categoryName: "Salgados" },
     { name: "Pastel", priceCents: 650, categoryName: "Salgados" },
@@ -113,8 +123,8 @@ async function main() {
   for (const prod of produtos) {
     const categoria = categorias.find((c) => c.name === prod.categoryName);
     await prisma.product.upsert({
-      where: { 
-        id: `prod-${prod.name.toLowerCase().replace(/\s+/g, "-")}` 
+      where: {
+        id: `prod-${prod.name.toLowerCase().replace(/\s+/g, "-")}`,
       },
       update: {},
       create: {
